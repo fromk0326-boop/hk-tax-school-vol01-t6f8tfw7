@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow, noarchive">
+<title>恩送り掲示板｜畠山式AI税理士ブートキャンプ</title>
+<style>
+  :root{
+    --bg:#f5f7fa;--card:#ffffff;--ink:#1f2d3d;--sub:#5b6b7e;--line:#e6ebf1;
+    --brand:#2864f0;--brand-soft:#eaf0ff;--green:#00a86b;--green-soft:#e6f7f0;
+    --radius:16px;--shadow:0 4px 20px rgba(31,45,61,.06);
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0;font-family:"Hiragino Kaku Gothic ProN","Yu Gothic UI","Meiryo",system-ui,sans-serif;
+    background:var(--bg);color:var(--ink);line-height:1.8;
+  }
+  a{color:var(--brand);text-decoration:none}
+  a:hover{text-decoration:underline}
+  .wrap{max-width:760px;margin:0 auto;padding:40px 20px 80px}
+  .badge{display:inline-block;background:var(--brand-soft);color:var(--brand);font-weight:800;font-size:13px;padding:6px 14px;border-radius:99px;margin-bottom:16px}
+  h1{font-size:26px;margin:0 0 10px}
+  p.lead{color:var(--sub);font-size:15px;margin:0 0 28px}
+  .back{display:inline-flex;align-items:center;gap:6px;font-size:13.5px;font-weight:700;margin-bottom:24px}
+  .toolbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
+  .count{font-size:13px;color:var(--sub);font-weight:700}
+  .refresh{
+    background:var(--card);border:1px solid var(--line);border-radius:99px;
+    padding:6px 14px;font-size:13px;font-weight:700;cursor:pointer;color:var(--ink);
+  }
+  .refresh:hover{background:var(--brand-soft)}
+  .post-card{
+    background:var(--card);border:1px solid var(--line);border-radius:var(--radius);
+    box-shadow:var(--shadow);padding:18px 20px;margin:14px 0;
+  }
+  .post-head{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px;flex-wrap:wrap;gap:6px}
+  .post-name{font-weight:800;font-size:14.5px}
+  .post-time{font-size:12px;color:var(--sub)}
+  .post-memo{font-size:14.5px;white-space:pre-wrap;word-break:break-word}
+  .empty,.loading,.error{
+    text-align:center;color:var(--sub);font-size:14px;padding:48px 0;
+  }
+  .error{color:#c0392b}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <a class="back" href="index.html">← 課題ページに戻る</a>
+  <span class="badge">畠山式AI税理士コミュニティ</span>
+  <h1>📋 恩送り掲示板</h1>
+  <p class="lead">受講生の皆さまからいただいた感想・フィードバックの一覧です。良かった点・改善点、どちらも次回以降のアップデートに活用させていただきます。</p>
+
+  <div class="toolbar">
+    <div class="count" id="count">読み込み中…</div>
+    <button class="refresh" onclick="loadPosts()">🔄 更新</button>
+  </div>
+
+  <div id="list"></div>
+</div>
+
+<script>
+  const BOARD_API = 'https://script.google.com/macros/s/AKfycbzhsHqZgC4KO_i9fMNZDY2CBbJx-0YSVNJfrPpd5M35EcjAq1iSPY_rHOUkzEBPU6gUhg/exec';
+
+  function escapeHtml(s){
+    return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  }
+
+  function formatTime(t){
+    const d = new Date(t);
+    if(isNaN(d.getTime())) return '';
+    return d.getFullYear()+'/'+(d.getMonth()+1)+'/'+d.getDate()+' '+
+      String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0');
+  }
+
+  function loadPosts(){
+    const list = document.getElementById('list');
+    const count = document.getElementById('count');
+    list.innerHTML = '<div class="loading">読み込み中…</div>';
+    fetch(BOARD_API)
+      .then(r => r.json())
+      .then(data => {
+        const posts = data.posts || [];
+        count.textContent = posts.length + '件の投稿';
+        if(posts.length === 0){
+          list.innerHTML = '<div class="empty">まだ投稿がありません。最初の恩送りメモをお待ちしています🌸</div>';
+          return;
+        }
+        list.innerHTML = posts.map(p => `
+          <div class="post-card">
+            <div class="post-head">
+              <span class="post-name">${escapeHtml(p.name || '匿名')}</span>
+              <span class="post-time">${escapeHtml(formatTime(p.timestamp))}</span>
+            </div>
+            <div class="post-memo">${escapeHtml(p.memo || '')}</div>
+          </div>
+        `).join('');
+      })
+      .catch(() => {
+        count.textContent = '';
+        list.innerHTML = '<div class="error">読み込みに失敗しました。時間をおいて「更新」を押してください。</div>';
+      });
+  }
+
+  loadPosts();
+</script>
+</body>
+</html>

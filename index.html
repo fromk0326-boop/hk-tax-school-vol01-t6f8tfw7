@@ -1,0 +1,778 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow, noarchive">
+<title>AI税理士ブートキャンプ｜第1回 freee × Claude Code 自動起票デビュー</title>
+<style>
+  :root{
+    --bg:#f5f7fa;
+    --card:#ffffff;
+    --ink:#1f2d3d;
+    --sub:#5b6b7e;
+    --line:#e6ebf1;
+    --brand:#2864f0;
+    --brand-soft:#eaf0ff;
+    --green:#00a86b;
+    --green-soft:#e6f7f0;
+    --amber:#f5a623;
+    --amber-soft:#fff6e6;
+    --red:#e5484d;
+    --red-soft:#fdeced;
+    --radius:16px;
+    --shadow:0 4px 20px rgba(31,45,61,.06);
+    --shadow-lg:0 10px 40px rgba(31,45,61,.10);
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{
+    margin:0;
+    font-family:"Hiragino Kaku Gothic ProN","Yu Gothic UI","Meiryo",system-ui,sans-serif;
+    background:var(--bg);
+    color:var(--ink);
+    line-height:1.8;
+    -webkit-font-smoothing:antialiased;
+  }
+  a{color:var(--brand);text-decoration:none}
+  a:hover{text-decoration:underline}
+
+  /* ===== 進捗バー（上部固定） ===== */
+  .progress-bar{
+    position:sticky;top:0;z-index:50;
+    background:rgba(255,255,255,.92);
+    backdrop-filter:blur(10px);
+    border-bottom:1px solid var(--line);
+    padding:10px 20px;
+    display:flex;align-items:center;gap:14px;
+    flex-wrap:wrap;
+  }
+  .progress-bar .logo{font-weight:800;font-size:15px;letter-spacing:.02em}
+  .progress-bar .logo span{color:var(--brand)}
+  .progress-track{
+    flex:1;min-width:160px;height:10px;border-radius:99px;
+    background:var(--line);overflow:hidden;
+  }
+  .progress-fill{
+    height:100%;width:0%;border-radius:99px;
+    background:linear-gradient(90deg,var(--brand),var(--green));
+    transition:width .5s cubic-bezier(.2,.8,.2,1);
+  }
+  .progress-count{font-weight:800;font-size:14px;white-space:nowrap}
+  .progress-count b{color:var(--brand);font-size:18px}
+
+  /* ===== レイアウト ===== */
+  .wrap{max-width:1080px;margin:0 auto;padding:0 20px;
+    display:grid;grid-template-columns:240px 1fr;gap:32px;align-items:start}
+  @media(max-width:880px){.wrap{grid-template-columns:1fr;gap:0}}
+
+  /* ===== サイドバー ===== */
+  .side{position:sticky;top:64px;padding:24px 0}
+  @media(max-width:880px){.side{display:none}}
+  .side h4{font-size:12px;color:var(--sub);text-transform:uppercase;letter-spacing:.08em;margin:0 0 10px}
+  .side nav a{display:block;padding:8px 12px;border-radius:10px;color:var(--ink);font-size:14px;font-weight:600;margin-bottom:2px}
+  .side nav a:hover{background:var(--brand-soft);text-decoration:none}
+  .side .note{margin-top:24px;font-size:12px;color:var(--sub);background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px}
+
+  /* ===== ヒーロー ===== */
+  .hero{padding:48px 0 24px}
+  .badge{display:inline-block;background:var(--brand-soft);color:var(--brand);font-weight:800;font-size:13px;padding:6px 14px;border-radius:99px;margin-bottom:16px}
+  .hero h1{font-size:34px;line-height:1.35;margin:0 0 14px;letter-spacing:-.01em}
+  .hero h1 em{font-style:normal;color:var(--brand)}
+  .hero p.lead{font-size:16px;color:var(--sub);margin:0 0 24px}
+  .goal{
+    background:linear-gradient(135deg,#eaf0ff,#e6f7f0);
+    border:1px solid var(--line);border-radius:var(--radius);
+    padding:22px 24px;box-shadow:var(--shadow);
+  }
+  .goal h3{margin:0 0 10px;font-size:17px}
+  .goal ul{margin:0;padding-left:22px}
+  .goal li{margin:6px 0}
+  .goal .out{margin-top:14px;font-weight:800;color:var(--green);font-size:15px}
+
+  /* ===== ステップカード ===== */
+  .step{
+    background:var(--card);border:1px solid var(--line);border-radius:var(--radius);
+    box-shadow:var(--shadow);padding:28px;margin:24px 0;scroll-margin-top:80px;
+    transition:box-shadow .3s, border-color .3s;
+  }
+  .step.done{border-color:var(--green);box-shadow:0 0 0 2px var(--green-soft),var(--shadow)}
+  .step-head{display:flex;align-items:flex-start;gap:16px;margin-bottom:6px}
+  .step-num{
+    flex:none;width:48px;height:48px;border-radius:14px;
+    background:var(--brand);color:#fff;font-weight:800;font-size:18px;
+    display:flex;align-items:center;justify-content:center;flex-direction:column;line-height:1;
+  }
+  .step.done .step-num{background:var(--green)}
+  .step-num small{font-size:9px;font-weight:600;opacity:.85;margin-top:2px}
+  .step-title{flex:1}
+  .step-title h2{margin:0;font-size:22px}
+  .step-meta{display:flex;gap:10px;flex-wrap:wrap;margin-top:6px}
+  .tag{font-size:12px;font-weight:700;padding:3px 10px;border-radius:99px;background:var(--bg);color:var(--sub);border:1px solid var(--line)}
+  .tag.time{background:var(--amber-soft);color:#a86c00;border-color:transparent}
+  .tag.type{background:var(--brand-soft);color:var(--brand);border-color:transparent}
+
+  /* ===== 情報ボックス ===== */
+  .box{border-radius:12px;padding:14px 16px;margin:16px 0;font-size:14.5px}
+  .box .box-h{font-weight:800;margin-bottom:4px;display:flex;align-items:center;gap:6px}
+  .box.tip{background:var(--amber-soft)}
+  .box.safe{background:var(--red-soft)}
+  .box.howto{background:var(--brand-soft)}
+  .box ul,.box ol{margin:6px 0;padding-left:22px}
+  .box li{margin:4px 0}
+
+  /* ===== コピペボックス ===== */
+  .copy{position:relative;margin:16px 0}
+  .copy-label{font-size:12px;font-weight:800;color:var(--sub);margin-bottom:6px;display:flex;align-items:center;gap:6px}
+  .copy pre{
+    margin:0;background:#0f1b2d;color:#e7eefc;border-radius:12px;
+    padding:16px 16px;overflow-x:auto;font-size:13.5px;line-height:1.7;
+    font-family:"SFMono-Regular",Consolas,"Liberation Mono",Menlo,monospace;white-space:pre-wrap;
+  }
+  .copy-btn{
+    position:absolute;top:30px;right:10px;
+    background:rgba(255,255,255,.12);color:#fff;border:1px solid rgba(255,255,255,.2);
+    border-radius:8px;padding:5px 12px;font-size:12px;font-weight:700;cursor:pointer;transition:.2s;
+  }
+  .copy-btn:hover{background:rgba(255,255,255,.25)}
+  .copy-btn.copied{background:var(--green);border-color:var(--green)}
+
+  /* ===== details ===== */
+  details{border:1px solid var(--line);border-radius:12px;margin:12px 0;overflow:hidden;background:var(--card)}
+  details summary{cursor:pointer;padding:12px 16px;font-weight:700;font-size:14.5px;list-style:none;display:flex;align-items:center;gap:8px;background:var(--bg)}
+  details summary::-webkit-details-marker{display:none}
+  details summary::before{content:"▶";font-size:10px;color:var(--sub);transition:transform .2s}
+  details[open] summary::before{transform:rotate(90deg)}
+  details .body{padding:14px 18px;font-size:14.5px}
+  details .body ul,details .body ol{padding-left:22px;margin:8px 0}
+  details .body li{margin:6px 0}
+
+  /* ===== 完了チェック ===== */
+  .check{
+    display:flex;align-items:center;gap:12px;margin-top:18px;
+    background:var(--green-soft);border:1px dashed var(--green);
+    border-radius:12px;padding:14px 16px;cursor:pointer;user-select:none;
+  }
+  .check input{width:20px;height:20px;accent-color:var(--green);cursor:pointer}
+  .check label{font-weight:800;color:#0a7d54;cursor:pointer;font-size:15px}
+
+  /* ===== 修了 ===== */
+  .finish{
+    background:linear-gradient(135deg,var(--brand),#5b8cff);color:#fff;
+    border-radius:var(--radius);padding:36px 28px;text-align:center;margin:32px 0 64px;
+    box-shadow:var(--shadow-lg);
+  }
+  .finish h2{margin:0 0 10px;font-size:26px}
+  .finish p{margin:0 0 18px;opacity:.95}
+  .finish .cta{display:inline-block;background:#fff;color:var(--brand);font-weight:800;padding:12px 28px;border-radius:99px}
+  .finish.celebrate{animation:pop .6s}
+  @keyframes pop{0%{transform:scale(.96)}50%{transform:scale(1.02)}100%{transform:scale(1)}}
+
+  hr.soft{border:none;border-top:1px solid var(--line);margin:22px 0}
+  .hana{font-size:13.5px;color:var(--sub);background:var(--bg);border-radius:12px;padding:10px 14px;margin-top:14px;border-left:3px solid var(--brand)}
+  .hana b{color:var(--brand)}
+
+  /* ===== コース全体ナビ ===== */
+  .course-nav{
+    background:var(--card);border-bottom:1px solid var(--line);
+    padding:12px 20px;
+  }
+  .course-nav-inner{
+    max-width:1080px;margin:0 auto;
+    display:flex;align-items:center;gap:8px;flex-wrap:wrap;
+  }
+  .course-nav-label{font-size:12px;font-weight:800;color:var(--sub);margin-right:4px;white-space:nowrap}
+  .course-pill{
+    display:inline-flex;align-items:center;gap:4px;
+    font-size:13px;font-weight:700;padding:6px 12px;border-radius:99px;
+    border:1px solid var(--line);background:var(--bg);color:var(--ink);
+    white-space:nowrap;
+  }
+  .course-pill:hover{background:var(--brand-soft);text-decoration:none}
+  .course-pill.current{background:var(--brand);border-color:var(--brand);color:#fff}
+  .course-pill.current:hover{background:var(--brand)}
+  .course-pill.soon{
+    background:var(--bg);color:#aab4c0;border-color:var(--line);
+    cursor:default;pointer-events:none;
+  }
+  .course-pill.soon::after{content:"準備中";font-size:10px;font-weight:800;margin-left:2px}
+
+  /* ===== 投稿フォーム ===== */
+  .post-field{margin:12px 0}
+  .post-field label{display:block;font-size:13px;font-weight:700;color:var(--sub);margin-bottom:6px}
+  .post-field input[type=text],.post-field textarea{
+    width:100%;border:1px solid var(--line);border-radius:10px;
+    padding:10px 12px;font-size:14.5px;font-family:inherit;color:var(--ink);
+    background:var(--bg);resize:vertical;
+  }
+  .post-field textarea{min-height:120px;line-height:1.7}
+  .post-submit{
+    display:inline-flex;align-items:center;gap:8px;
+    background:var(--brand);color:#fff;font-weight:800;font-size:15px;
+    border:none;border-radius:99px;padding:12px 28px;cursor:pointer;transition:.2s;
+  }
+  .post-submit:hover{background:#1d4fd1}
+  .post-submit:disabled{background:var(--sub);cursor:wait}
+  .post-status{font-size:13.5px;font-weight:700;margin-top:10px}
+  .post-status.ok{color:var(--green)}
+  .post-status.err{color:var(--red)}
+  .board-link{
+    display:inline-flex;align-items:center;gap:6px;margin-top:14px;
+    font-size:13.5px;font-weight:700;color:var(--brand);
+  }
+</style>
+</head>
+<body>
+
+<!-- 進捗バー -->
+<div class="progress-bar">
+  <div class="logo">畠山式AI税理士<span>ブートキャンプ</span></div>
+  <div class="progress-track"><div class="progress-fill" id="fill"></div></div>
+  <div class="progress-count"><b id="cnt">0</b>/4 課題クリア</div>
+</div>
+
+<!-- コース全体ナビ -->
+<div class="course-nav">
+  <div class="course-nav-inner">
+    <span class="course-nav-label">📚 全7回</span>
+    <a class="course-pill current" href="vol01_課題ページ.html">第1回</a>
+    <a class="course-pill soon" href="vol02_課題ページ.html">第2回</a>
+    <a class="course-pill soon" href="vol03_課題ページ.html">第3回</a>
+    <a class="course-pill soon" href="vol04_課題ページ.html">第4回</a>
+    <a class="course-pill soon" href="vol05_課題ページ.html">第5回</a>
+    <a class="course-pill soon" href="update01_課題ページ.html">アプデ①</a>
+    <a class="course-pill soon" href="update02_課題ページ.html">アプデ②</a>
+  </div>
+</div>
+
+<div class="wrap">
+  <!-- サイドバー -->
+  <aside class="side">
+    <h4>このページ</h4>
+    <nav>
+      <a href="#hero">🎯 ゴール</a>
+      <a href="#t1">① freeeアカウント作成</a>
+      <a href="#t2">② 口座・カードを連携</a>
+      <a href="#t3">③ Claude Codeインストール</a>
+      <a href="#t4">④ freee MCP接続・自動起票</a>
+      <a href="#bonus">🎁 （任意）AI事務所テンプレート</a>
+      <a href="#post">✍️ 恩送りメモを投稿</a>
+      <a href="#faq">❓ よくあるつまずき</a>
+      <a href="#finish">🎉 修了</a>
+    </nav>
+    <div class="note">
+      <b>第1回 単独でOK</b><br>
+      会計の知識がなくても大丈夫です。PC1台あれば今日から始められます🌸<br>
+      ※ Claude Codeは<b>Proプラン課金（月額）必須</b>です。クレジットカードをご準備ください。
+    </div>
+  </aside>
+
+  <!-- メイン -->
+  <main>
+    <!-- ヒーロー -->
+    <section class="hero" id="hero">
+      <span class="badge">第1回 / 全シリーズ</span>
+      <h1>freee × Claude Code で<br><em>「伝票が自動で起票される」</em>を体験する</h1>
+      <p class="lead">手入力ゼロ。AIに話しかけるだけで、freeeに取引が起票される——その第一歩を、今日この場で動かすところまで進めていただきます。</p>
+
+      <div class="goal">
+        <h3>🎯 この課題を終えると…</h3>
+        <ul>
+          <li>クラウド会計 <b>freee</b> のアカウントが使える状態になります（新規登録後<b>30日間のお試し期間でOK</b>。期間終了後も口座連携・自動起票を続ける場合は有料プランのご契約が必要です）</li>
+          <li>銀行口座・クレジットカードが freee と<b>連携</b>され、明細が自動で取り込まれる状態になります</li>
+          <li>AI開発ツール <b>Claude Code</b> がご自身のPCで起動するようになります</li>
+          <li>Claude Code と freee が <b>MCP</b> でつながり、<b>AIが自動で伝票を起票</b>する瞬間を体験いただけます</li>
+        </ul>
+        <div class="out">⏱ 目安：合計 約50〜70分　／　💪 難易度：初級（コピペ中心）</div>
+      </div>
+    </section>
+
+    <!-- ===== ステップ1 ===== -->
+    <section class="step" id="t1">
+      <div class="step-head">
+        <div class="step-num">1<small>/ 4</small></div>
+        <div class="step-title">
+          <h2>freee のアカウントを作る 🏦</h2>
+          <div class="step-meta">
+            <span class="tag time">⏱ 約10分</span>
+            <span class="tag type">🤝 準備ステップ</span>
+          </div>
+        </div>
+      </div>
+
+      <p>まずは伝票が起票される「箱」をご用意ください。クラウド会計freeeの無料アカウントを作成します。<b>すでにfreeeのアカウントをお持ちの方はこのステップは飛ばしてOKです</b>。</p>
+
+      <div class="box tip">
+        <div class="box-h">💡 これで何がラクになる？</div>
+        freeeは「取引」を入れると、複式簿記の仕訳を自動で組み立ててくれるクラウド会計です。あとでAIがここに直接書き込めるようになります。
+      </div>
+
+      <div class="box howto">
+        <div class="box-h">📋 手順</div>
+        <ol>
+          <li><a href="https://www.freee.co.jp/" target="_blank" rel="noopener">freee公式サイト</a> を開く</li>
+          <li>「無料で始める」からメールアドレスで登録</li>
+          <li>確認メールのリンクを踏んで本登録</li>
+          <li>事業所名（屋号や会社名／個人なら自分の名前でOK）を入力</li>
+          <li>ログイン後、ダッシュボードが表示されれば完了です！</li>
+        </ol>
+      </div>
+
+      <div class="box safe">
+        <div class="box-h">🔒 安全メモ</div>
+        パスワードの使い回しはお控えください。ログイン情報やトークンが映る画面は📸スクリーンショット・画面共有をしないようご注意ください。
+      </div>
+
+      <details>
+        <summary>🛠 迷ったとき・トラブル</summary>
+        <div class="body">
+          <ul>
+            <li><b>確認メールが来ない</b> → 迷惑メールフォルダをご確認ください。数分待っても来ない場合は再送してください。</li>
+            <li><b>事業所はあとで変えられる？</b> → はい、設定からいつでも変更可能です。気軽に進めていただいて大丈夫です。</li>
+            <li><b>有料プランに入る必要は？</b> → freeeは新規登録から<b>30日間のお試し期間</b>であれば、口座連携・freee MCP（API連携）を無料でご利用いただけます。ただし<b>お試し期間が終了し有料プランをご契約いただかないと、口座連携・API連携は自動的に解除・停止</b>されます。今日の体験のみであれば問題ありませんが、実務で継続利用される場合は有料プランのご契約が必須です。</li>
+          </ul>
+        </div>
+      </details>
+
+      <div class="check" onclick="toggle(this,event)">
+        <input type="checkbox" data-step="1">
+        <label>✅ freeeにログインできて、ダッシュボードが表示された</label>
+      </div>
+    </section>
+
+    <!-- ===== ステップ2 ===== -->
+    <section class="step" id="t2">
+      <div class="step-head">
+        <div class="step-num">2<small>/ 4</small></div>
+        <div class="step-title">
+          <h2>銀行口座・クレジットカードを連携する 🏧</h2>
+          <div class="step-meta">
+            <span class="tag time">⏱ 約10分</span>
+            <span class="tag type">🤝 準備ステップ</span>
+          </div>
+        </div>
+      </div>
+
+      <p>freeeに口座やカードをつなぐと、明細が自動で取り込まれます。これが「AIが自動で起票する」体験の元になります。<b>すでに口座連携が済んでいる方はこのステップは飛ばしてOKです</b>。</p>
+
+      <div class="box tip">
+        <div class="box-h">💡 これで何がラクになる？</div>
+        口座・カードを連携すると、入出金明細が自動でfreeeに届くようになります。あとはAIがその明細を見て「これは消耗品費っぽいですね、登録しますか？」と提案し、起票するという流れが作れます。
+      </div>
+
+      <div class="box howto">
+        <div class="box-h">📋 手順</div>
+        <ol>
+          <li>freeeにログインし、左メニューの「<b>口座</b>」（または「自動で経理」）を開く</li>
+          <li>「<b>新しく口座を登録</b>」→ 連携したい銀行・クレジットカード会社を検索</li>
+          <li>各金融機関のネットバンキングID・パスワードを入力してログイン許可</li>
+          <li>同期が始まったら完了です。初回は明細の取り込みに数分〜数十分かかることがあります</li>
+        </ol>
+      </div>
+
+      <div class="box safe">
+        <div class="box-h">🔒 安全メモ</div>
+        ネットバンキングのID・パスワードはfreee社の正規連携画面以外には絶対に入力しないでください。連携作業中の画面は📸スクリーンショット・画面共有をしないようご注意ください。
+      </div>
+
+      <details>
+        <summary>🛠 迷ったとき・トラブル</summary>
+        <div class="body">
+          <ul>
+            <li><b>連携したい銀行が見つからない</b> → 銀行名・支店名で再検索してください。それでも出ない場合はCSVでの明細取込に切り替え可能です（当日サポートいたします）。</li>
+            <li><b>明細がなかなか出てこない</b> → 初回同期は時間がかかることがあります。10〜20分待っても出ない場合は「今すぐ同期」を再実行してください。</li>
+            <li><b>連携自体に料金はかかる？</b> → 新規登録から<b>30日間のお試し期間中</b>は無料で口座連携をご利用いただけます。お試し期間後も連携を続けるには<b>有料プランのご契約が必要</b>です（未契約のままだと連携が解除されます）。</li>
+            <li><b>すでに連携済みでテスト用の明細がない</b> → ステップ④に「テスト取引を手動で起票してもらう」コピペ文もご用意していますので、そちらをお使いください。</li>
+          </ul>
+        </div>
+      </details>
+
+      <div class="check" onclick="toggle(this,event)">
+        <input type="checkbox" data-step="2">
+        <label>✅ freeeに口座・カードが1件以上連携されている（または連携不要と判断した）</label>
+      </div>
+    </section>
+
+    <!-- ===== ステップ3 ===== -->
+    <section class="step" id="t3">
+      <div class="step-head">
+        <div class="step-num">3<small>/ 4</small></div>
+        <div class="step-title">
+          <h2>Claude Code をインストールする 💻</h2>
+          <div class="step-meta">
+            <span class="tag time">⏱ 約15分</span>
+            <span class="tag type">⚡ セットアップ</span>
+          </div>
+        </div>
+      </div>
+
+      <p>次は、AIに作業をお願いするための道具「Claude Code」を自分のPCに入れるよ。インストール手順は<b>事前に共有しているUnikoukokunさんの課題ページ</b>にまとまっているので、そちらを見ながら進めてね。</p>
+
+      <div class="box tip">
+        <div class="box-h">💡 これで何がラクになる？</div>
+        Claude Codeは、AIに自然な言葉で指示できるデスクトップアプリ。「この請求書を登録して」みたいな依頼を、そのまま実行に変えてくれる相棒だよ。<b>ターミナル（黒い画面）は不要</b>、デスクトップアプリだけで完結するよ。
+      </div>
+
+      <div class="box howto">
+        <div class="box-h">📋 進め方</div>
+        <ol>
+          <li>こちらのページを開く → <a href="https://bbs.unikoukokun.com/kadai.html" target="_blank" rel="noopener">Unikoukokunさんの課題ページ（課題1-1）</a></li>
+          <li>「課題1-1」の手順に沿って、Mac / Windowsどちらか自分のPCに合う方でインストール</li>
+          <li>アカウント作成は「<b>Googleで続ける</b>」から、ふだん使っているGoogleアカウントを選ぶだけでOK</li>
+          <li>Claude を<b>課金（Proプラン・月額制／約22ドル＝3,300円前後）</b>する。<b>課金しないとClaude Codeは動かない</b>ので、ここは必須</li>
+          <li>（Gitが必要と案内された場合のみ）Mac は GitHub Desktop、Windows は git-scm.com からGUIインストール。インストール後はPCを再起動するかアプリを開き直す</li>
+        </ol>
+      </div>
+
+      <p><b>Claude Codeアプリを開いて「こんにちは」と話しかけてみて、返事が来れば成功！</b></p>
+
+      <div class="box safe">
+        <div class="box-h">🔒 安全メモ</div>
+        クレジットカード情報の入力画面・ログイン画面は📸スクショ・画面共有しないでね。
+      </div>
+
+      <details>
+        <summary>🛠 迷ったとき・トラブル</summary>
+        <div class="body">
+          <ul>
+            <li><b>課金しないと使える？</b> → 使えない。無料プランのままだとClaude Codeは動かないよ。月額のProプラン（年額ではなく月額を選ぶこと）に入ってね。</li>
+            <li><b>Googleアカウントがない</b> → メールアドレスでの新規登録もできる。当日サポートするね。</li>
+            <li><b>Gitを案内されたけどよく分からない</b> → アプリの案内に従ってGUIインストールするだけでOK。コマンド入力は不要。</li>
+            <li><b>インストールしたのに反応しない</b> → アプリを完全に閉じて開き直す。それでもダメならPCを再起動。</li>
+          </ul>
+        </div>
+      </details>
+
+      <div class="check" onclick="toggle(this,event)">
+        <input type="checkbox" data-step="3">
+        <label>✅ Claude Codeアプリが起動し、Proプランの課金も完了した</label>
+      </div>
+    </section>
+
+    <!-- ===== ステップ4 ===== -->
+    <section class="step" id="t4">
+      <div class="step-head">
+        <div class="step-num">4<small>/ 4</small></div>
+        <div class="step-title">
+          <h2>freee MCPサーバーを接続して、自動起票を体験する 🔌</h2>
+          <div class="step-meta">
+            <span class="tag time">⏱ 約20分</span>
+            <span class="tag type">🚀 本番・体験</span>
+          </div>
+        </div>
+      </div>
+
+      <p>いよいよ本番！ Claude Code と freee を「MCP」でつなぐと、AIがあなたの代わりにfreeeへ伝票を起票できるようになるよ。</p>
+
+      <div class="box tip">
+        <div class="box-h">💡 MCPってなに？</div>
+        MCP（Model Context Protocol）は、AIと外部サービスをつなぐ“共通プラグ”。これを挿すと、Claude Codeが「freeeを操作する手」を手に入れるイメージだよ。
+      </div>
+
+      <div class="box howto">
+        <div class="box-h">📋 手順①：freee MCPを追加する（プラグイン方式）</div>
+        <ol>
+          <li>Claude Codeアプリを開き、下の2つを<b>会話画面（チャット欄）にそのままコピペして送信</b> ↓（ターミナルは不要。freee公式が配布している正規のプラグインを使う方法で、OAuthの個別設定もいらない）</li>
+        </ol>
+      </div>
+
+      <div class="copy">
+        <div class="copy-label">📋 ① freee公式プラグインのマーケットプレイスを追加</div>
+        <button class="copy-btn" onclick="copyCode(this)">コピー</button>
+        <pre>/plugin marketplace add freee/freee-mcp</pre>
+      </div>
+
+      <div class="copy">
+        <div class="copy-label">📋 ② freee MCPプラグインをインストール</div>
+        <button class="copy-btn" onclick="copyCode(this)">コピー</button>
+        <pre>/plugin install freee-mcp@freee-mcp-marketplace</pre>
+      </div>
+
+      <div class="box howto">
+        <div class="box-h">📋 手順②：認証する</div>
+        <ol>
+          <li>インストール後、freeeのログイン画面が自動的にブラウザで開く</li>
+          <li>freeeにログイン →「許可する」をクリック</li>
+          <li>連携したい<b>事業所</b>を選択（ステップ①で作った事業所を選ぶ）</li>
+          <li>ターミナルに戻り <b>認証OK</b> の表示が出れば接続成功！🎉</li>
+        </ol>
+        <p style="margin:8px 0 0;font-size:13px;color:var(--sub)">※ 権限はログイン中のfreeeユーザーと同じ範囲に限定されるよ。</p>
+      </div>
+
+      <div class="copy">
+        <div class="copy-label">🏃 メイン体験：口座連携した明細から、AIに自動で起票してもらう</div>
+        <button class="copy-btn" onclick="copyCode(this)">コピー</button>
+<pre>freeeに同期されている未処理の取引明細（自動で経理）を1件見せて。
+内容を踏まえて、勘定科目の候補を提案してね。
+私がOKと言ったら、その内容でfreeeに登録して。</pre>
+      </div>
+
+      <p>Claudeが明細を確認 → 勘定科目を提案 → あなたが「OK」と返す → <b>freee側に取引が自動で起票される</b>。これが今日のメインゴールだよ✨ freeeの「取引」一覧を開いて、登録されているか見てみよう！</p>
+
+      <details>
+        <summary>🙋 ステップ②を飛ばした／同期明細がまだない人はこちら</summary>
+        <div class="body">
+          <p>口座連携がまだ、または明細の取り込みが間に合っていない場合は、代わりにこちらをコピペしてね。テスト取引で同じ流れを体験できるよ。</p>
+          <div class="copy">
+            <div class="copy-label">📋 テスト用：AIに伝票を起票してもらう</div>
+            <button class="copy-btn" onclick="copyCode(this)">コピー</button>
+<pre>freeeに、本日付で「消耗品費 1,100円（税込）／現金」の取引を1件、テストで起票して。
+登録前に内容を見せて、OKしたら登録してね。</pre>
+          </div>
+        </div>
+      </details>
+
+      <div class="box safe">
+        <div class="box-h">🔒 安全メモ</div>
+        <ul>
+          <li>必ず「登録前に内容を見せて」と添えて、<b>確認してから登録</b>させる癖をつける。</li>
+          <li>最初は少額・少件数で試すのが安心。</li>
+          <li>認証画面・トークンが映る画面は📸撮らない・共有しない。</li>
+        </ul>
+      </div>
+
+      <details>
+        <summary>🛠 迷ったとき・トラブル</summary>
+        <div class="body">
+          <ul>
+            <li><b>🟥 認証はOKなのに「事業所が見つからない」</b> → freeeにログインしている事業所と、認証時に選んだ事業所が同じか確認。</li>
+            <li><b>🟥 起票したのにfreeeに出ない</b> → 取引一覧の日付フィルタを確認。今日の日付に絞って再表示。</li>
+            <li><b>プラグインが見つからない／インストールに失敗する</b> → 会話画面で <code>/plugin marketplace list</code> と送って追加されているか確認。再度①からやり直す。</li>
+            <li><b>権限エラー</b> → freee側でアプリ連携を「許可」したか再確認。一度 <code>/mcp</code> と送ってfreeeの接続状態を確認するのもアリ。</li>
+            <li><b>同期明細が1件も出てこない</b> → ステップ②の口座連携がまだの可能性。上の「テスト用」コピペで体験を進めてOK。</li>
+          </ul>
+        </div>
+      </details>
+
+      <div class="check" onclick="toggle(this,event)">
+        <input type="checkbox" data-step="4">
+        <label>✅ AIが起票した取引が、freeeの取引一覧に表示された</label>
+      </div>
+    </section>
+
+    <!-- ===== ボーナス：AI事務所テンプレート ===== -->
+    <section class="step" id="bonus" style="border-color:var(--amber);background:linear-gradient(180deg,#fffaf0,var(--card))">
+      <div class="step-head">
+        <div class="step-num" style="background:var(--amber)">🎁<small>任意</small></div>
+        <div class="step-title">
+          <h2>時間がある人向け：AI事務所テンプレート一式を入れる</h2>
+          <div class="step-meta">
+            <span class="tag time">⏱ 約1〜1.5時間</span>
+            <span class="tag type">🌟 任意（チェック対象外）</span>
+          </div>
+        </div>
+      </div>
+
+      <p>ここまでで「自動起票デビュー」は完了。<b>時間に余裕がある人だけ</b>、ここから先に進んでみよう。畠山から配布している「AI事務所テンプレート一式」を使うと、Claude Codeに<b>あなた専用のキャラ・事務所ルール・安全ロック・記憶機能</b>を一気に持たせられるよ。</p>
+
+      <div class="box tip">
+        <div class="box-h">💡 何が手に入る？</div>
+        <ul>
+          <li>① <b>md設定</b>：AIの名前・性格、事務所のルール（CLAUDE.md）</li>
+          <li>② <b>セキュリティ</b>：<code>.env</code>誤読み取り・外部送信・<code>rm -rf</code>事故を防ぐロック</li>
+          <li>③ <b>メモリ</b>：「前にも言いましたよね」を実現する記憶の仕組み</li>
+          <li>④ <b>Hooks</b>：長い会話・要約後も前提を忘れない仕掛け</li>
+        </ul>
+        <div style="text-align:center;margin-top:14px">
+          <a href="guide.html" target="_blank" rel="noopener" class="course-pill" style="display:inline-flex;padding:10px 22px;font-size:14px">📖 詳細解説はこちら（任意）</a>
+        </div>
+      </div>
+
+      <div class="box howto">
+        <div class="box-h">📋 手順</div>
+        <ol>
+          <li>下のリンクからテンプレート一式（フォルダ）をダウンロードし、デスクトップなど分かりやすい場所に保存 → <a href="https://drive.google.com/drive/folders/1RXS7ocb--mk-w5ascLO0cz4fC8XKqaBO?usp=sharing" target="_blank" rel="noopener">AI事務所テンプレート一式（Googleドライブ）</a></li>
+          <li>Claude Codeで、保存したフォルダを開く</li>
+          <li>下のコピペ文を会話画面に貼って送信（{{ }}の部分は自分の情報に書き換えてね）↓</li>
+        </ol>
+      </div>
+
+      <div class="copy">
+        <div class="copy-label">📋 Claude Codeに丸ごと渡すプロンプト</div>
+        <button class="copy-btn" onclick="copyCode(this)">コピー</button>
+<pre>このフォルダには、Claude Codeのセットアップ一式（4点セット）が入っています。
+セットアップ/README.md を読んで、書かれている順番（①md→②セキュリティ→③メモリ→④Hooks）の通りに、
+私のPCへの設置を進めてください。
+
+私は{{税理士／会計士／社労士／行政書士／弁護士／その他}}で、
+事務所名は「{{あなたの事務所名}}」です。
+
+進め方のルール：
+- 各フォルダのREADMEに書いてある手順に沿って進めてください
+- カスタマイズに必要な情報（名前・呼び方・キャラの性格など）は、その都度1問ずつ私に聞いてください
+- 既存ファイルの上書き・バックアップなど、確認が必要な場面では必ず先に私に確認してください
+- 1つのフォルダの設置が終わったら、「①が終わりました。②に進みますか？」のように区切って報告してください
+- 全部終わったら、最後に「動作確認の手順」を案内してください</pre>
+      </div>
+
+      <p>あとはClaude Codeが質問してくるので、答えながら進めるだけ。<b>「コードが分からないから無理」と思う必要はなし。</b>一気に4つ不安なら「まずは①だけ進めてください」と区切ってお願いしてもOK。</p>
+
+      <div class="box safe">
+        <div class="box-h">🔒 安全メモ</div>
+        既存ファイルの上書きが発生する場面ではClaude Codeが確認を挟む設計になってる。よく分からないまま「はい」を連打せず、聞かれたら内容を読んでから答えてね。
+      </div>
+
+      <details>
+        <summary>🛠 迷ったとき・トラブル</summary>
+        <div class="body">
+          <ul>
+            <li><b>設定したのに反映されない</b> → Claude Codeを完全に再起動（タスクトレイに残っていないかも確認）。</li>
+            <li><b><code>.claude</code> フォルダが見つからない</b> → 隠しフォルダなので「隠しファイルを表示」をON。一度Claude Codeを起動すると自動で作られる。</li>
+            <li><b>このステップは今日できなかった</b> → 問題なし。次回以降のブートキャンプで進めればOK。</li>
+          </ul>
+        </div>
+      </details>
+    </section>
+
+    <!-- ===== 恩送り掲示板 ===== -->
+    <section class="step" id="post" style="border-color:var(--green)">
+      <div class="step-head">
+        <div class="step-num" style="background:var(--green)">✍️<small>任意</small></div>
+        <div class="step-title">
+          <h2>恩送りメモを投稿する</h2>
+          <div class="step-meta">
+            <span class="tag time">⏱ 約3分</span>
+            <span class="tag type">🌟 任意（チェック対象外）</span>
+          </div>
+        </div>
+      </div>
+
+      <p>今日の課題を通して感じたことを、ぜひ教えてください。<b>良かった点・改善してほしい点、どちらも歓迎</b>です。いただいた内容は、次回以降のブートキャンプ資料のアップデートに反映させていただきます。</p>
+
+      <div class="post-field">
+        <label for="postName">お名前・ニックネーム（任意）</label>
+        <input type="text" id="postName" placeholder="例：たけだ">
+      </div>
+      <div class="post-field">
+        <label for="postMemo">恩送りメモ（良かったこと・改善してほしいこと、どちらもOKです）</label>
+        <textarea id="postMemo" placeholder="例：口座連携の手順が分かりやすかったです／freee MCPの認証でつまずきました　など"></textarea>
+      </div>
+      <button class="post-submit" id="postBtn" onclick="submitPost()">📮 投稿する</button>
+      <div class="post-status" id="postStatus"></div>
+
+      <div class="box safe">
+        <div class="box-h">🔒 安全メモ</div>
+        投稿内容は他の受講生・運営も閲覧できる公開掲示板に表示されます。APIトークンやパスワードなどの秘密情報、個人情報は記載しないようお願いいたします。
+      </div>
+
+      <a class="board-link" href="board.html" target="_blank" rel="noopener">📋 みんなの投稿を見る（掲示板を開く）→</a>
+    </section>
+
+    <!-- FAQ -->
+    <section id="faq">
+      <h2>❓ よくあるつまずき</h2>
+      <details>
+        <summary>会計の知識がなくても大丈夫？</summary>
+        <div class="body">大丈夫！今回は「AIが自動で伝票を作る流れを体験する」のが目的。仕訳の中身は少しずつ覚えていけばOKだよ🌸</div>
+      </details>
+      <details>
+        <summary>Macでも同じようにできる？</summary>
+        <div class="body">できるよ。コマンドはMac/Windows共通。ターミナルアプリの名前が違うだけ（Mac=ターミナル / Windows=PowerShell）。</div>
+      </details>
+      <details>
+        <summary>料金はかかる？</summary>
+        <div class="body">freee-mcp自体はfreee公式が無料公開しているツールですが、freee側は<b>新規登録から30日間のお試し期間</b>であれば口座連携・API連携を無料でご利用いただけます。<b>お試し期間終了後も継続利用するには、freeeの有料プランへのご契約が必要</b>です（未契約のままだと連携が解除されます）。また<b>Claude Codeは課金（Proプラン・月額制／約22ドル）が必須</b>で、無料プランのままでは動きません。ステップ③で必ず課金まで済ませてください。</div>
+      </details>
+      <details>
+        <summary>口座連携が当日までに間に合わなかったら？</summary>
+        <div class="body">大丈夫。ステップ④に「テスト取引を手動で起票してもらう」コピペ文を用意してるから、そちらで同じ流れを体験できるよ。口座連携は後日でもOK。</div>
+      </details>
+    </section>
+
+    <!-- 修了 -->
+    <section class="finish" id="finish">
+      <h2 id="finishMsg">🎉 第1回 完了を目指そう！</h2>
+      <p>4つのチェックが全部つくと、ここが「修了」に変わるよ。</p>
+      <a href="#hero" class="cta">↑ 上に戻ってチェックを進める</a>
+    </section>
+
+  </main>
+</div>
+
+<script>
+  // 恩送り掲示板への投稿
+  const BOARD_API = 'https://script.google.com/macros/s/AKfycbzhsHqZgC4KO_i9fMNZDY2CBbJx-0YSVNJfrPpd5M35EcjAq1iSPY_rHOUkzEBPU6gUhg/exec';
+  function submitPost(){
+    const name = document.getElementById('postName').value.trim();
+    const memo = document.getElementById('postMemo').value.trim();
+    const btn = document.getElementById('postBtn');
+    const status = document.getElementById('postStatus');
+    if(!memo){
+      status.textContent = '恩送りメモを入力してください。';
+      status.className = 'post-status err';
+      return;
+    }
+    btn.disabled = true;
+    status.textContent = '送信中…';
+    status.className = 'post-status';
+    fetch(BOARD_API, {
+      method: 'POST',
+      mode: 'no-cors',
+      headers: {'Content-Type': 'text/plain;charset=utf-8'},
+      body: JSON.stringify({name: name || '匿名', memo: memo})
+    }).then(()=>{
+      status.textContent = '投稿ありがとうございます！🌸 掲示板に反映されます。';
+      status.className = 'post-status ok';
+      document.getElementById('postMemo').value = '';
+      btn.disabled = false;
+    }).catch(()=>{
+      status.textContent = '送信に失敗しました。通信環境をご確認のうえ、もう一度お試しください。';
+      status.className = 'post-status err';
+      btn.disabled = false;
+    });
+  }
+
+  // コピーボタン
+  function copyCode(btn){
+    const pre = btn.parentElement.querySelector('pre');
+    navigator.clipboard.writeText(pre.innerText).then(()=>{
+      btn.textContent='コピー済み✓';btn.classList.add('copied');
+      setTimeout(()=>{btn.textContent='コピー';btn.classList.remove('copied')},1600);
+    });
+  }
+
+  // チェックの進捗
+  const KEY='bootcamp1_progress';
+  function load(){try{return JSON.parse(localStorage.getItem(KEY))||{}}catch(e){return {}}}
+  function save(s){localStorage.setItem(KEY,JSON.stringify(s))}
+
+  function render(){
+    const s=load();
+    let done=0;
+    document.querySelectorAll('input[data-step]').forEach(cb=>{
+      const n=cb.dataset.step;
+      cb.checked=!!s[n];
+      cb.closest('.step').classList.toggle('done',!!s[n]);
+      if(s[n])done++;
+    });
+    document.getElementById('cnt').textContent=done;
+    document.getElementById('fill').style.width=(done/4*100)+'%';
+    const fin=document.getElementById('finish');
+    const msg=document.getElementById('finishMsg');
+    if(done===4){
+      msg.textContent='🎉 第1回 修了おめでとう！自動起票デビュー達成🌸';
+      fin.classList.add('celebrate');
+    }else{
+      msg.textContent='🎉 第1回 完了を目指そう！';
+      fin.classList.remove('celebrate');
+    }
+  }
+
+  function toggle(el,e){
+    if(e.target.tagName!=='INPUT'){
+      const cb=el.querySelector('input');cb.checked=!cb.checked;
+    }
+    const s=load();
+    el.querySelectorAll('input[data-step]').forEach(cb=>{s[cb.dataset.step]=cb.checked});
+    save(s);render();
+  }
+  document.querySelectorAll('input[data-step]').forEach(cb=>{
+    cb.addEventListener('change',()=>{
+      const s=load();s[cb.dataset.step]=cb.checked;save(s);render();
+    });
+  });
+
+  render();
+</script>
+</body>
+</html>

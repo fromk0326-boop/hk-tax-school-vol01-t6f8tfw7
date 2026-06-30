@@ -1,0 +1,863 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=1400, minimum-scale=0.1, maximum-scale=3.0">
+  <meta name="robots" content="noindex, nofollow, noarchive">
+  <title>畠山式AI税理士ブートキャンプ｜配布テンプレート解説（①md ②セキュリティ ③メモリ ④Hooks）</title>
+  <style>
+/* ===== SLIDE ENGINE ===== */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{width:100%;font-family:var(--font-primary,'Meiryo UI','Hiragino Sans',sans-serif);background:var(--color-bg,#0a0a0a);color:var(--color-text,#e5e7eb);-webkit-font-smoothing:antialiased}
+.slide-deck{width:100%;overflow:visible}
+.slide{width:100vw;min-height:100vh;display:flex;flex-direction:column;justify-content:center;align-items:center;padding:var(--slide-padding,60px 80px);position:relative;overflow:hidden}
+.slide-inner{width:100%;max-width:var(--slide-max-width,1400px);height:100%;display:flex;flex-direction:column;justify-content:center;position:relative;z-index:1}
+.progress-bar{position:fixed;top:0;left:0;height:3px;background:var(--color-accent,#d97757);z-index:1000;transition:width .1s}
+
+/* ===== THEME ===== */
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700;900&display=swap');
+:root{
+  --color-bg:#0f1117;--color-bg-alt:#1a1d27;--color-surface:#1a1d27;--color-surface-alt:#252840;
+  --color-text:#e5e7eb;--color-text-secondary:#d1d5db;--color-text-muted:#9ca3af;--color-text-subtle:rgba(156,163,175,.5);
+  --color-accent:#d97757;--color-accent-light:rgba(217,119,87,.15);--color-accent-dim:rgba(217,119,87,.08);
+  --color-border:rgba(255,255,255,.09);--color-border-strong:rgba(255,255,255,.18);--color-border-accent:rgba(217,119,87,.4);
+  --color-success:#34a853;--color-warning:#fbbc04;--color-danger:#ea4335;
+  --color-nav-bg:rgba(0,0,0,.6);
+  --font-primary:'Noto Sans JP','Hiragino Kaku Gothic ProN','Meiryo UI',sans-serif;
+  --font-weight-light:300;--font-weight-normal:400;--font-weight-medium:500;--font-weight-bold:700;--font-weight-black:900;
+  --text-xs:18px;--text-sm:20px;--text-base:22px;--text-lg:29px;--text-xl:33px;--text-2xl:46px;--text-3xl:57px;--text-4xl:79px;--text-5xl:102px;--text-hero:137px;
+  --space-xs:4px;--space-sm:8px;--space-md:16px;--space-lg:24px;--space-xl:32px;--space-2xl:48px;--space-3xl:64px;
+  --slide-padding:60px 80px;--slide-max-width:1400px;
+  --radius-sm:4px;--radius-md:8px;--radius-lg:12px;--radius-xl:16px;
+}
+
+/* slide-title */
+.slide-title{background:#0a0a0a;text-align:left;color:#f0f0f0;position:relative;overflow:hidden}
+.slide-title::before{content:'';position:absolute;top:-30%;right:-20%;width:80%;height:160%;background:radial-gradient(ellipse at 30% 50%,rgba(217,119,87,.35) 0%,transparent 60%),radial-gradient(ellipse at 70% 30%,rgba(251,188,4,.18) 0%,transparent 55%),radial-gradient(ellipse at 50% 80%,rgba(234,67,53,.12) 0%,transparent 50%);filter:blur(40px);z-index:0;animation:auroraShift 12s ease-in-out infinite alternate}
+@keyframes auroraShift{0%{transform:translate(0,0) scale(1)}50%{transform:translate(-20px,10px) scale(1.05)}100%{transform:translate(10px,-15px) scale(.98)}}
+.slide-title .slide-inner{z-index:1;justify-content:flex-end;padding-bottom:var(--space-3xl)}
+.slide-title .title-main{font-size:var(--text-5xl);font-weight:var(--font-weight-black);line-height:1.1;letter-spacing:-.02em;margin-bottom:var(--space-xl);color:#fff}
+.slide-title .title-sub{font-size:var(--text-xl);color:rgba(255,255,255,.7);font-weight:var(--font-weight-normal);line-height:1.5}
+.slide-title .title-meta{font-size:var(--text-base);color:rgba(255,255,255,.45);margin-top:var(--space-xl);text-align:right}
+
+/* slide-chapter */
+.slide-chapter{background:var(--color-bg);justify-content:center}
+.slide-chapter .chapter-number{font-size:var(--text-hero);font-weight:var(--font-weight-black);color:var(--color-accent);line-height:1;margin-bottom:var(--space-md);opacity:.2}
+.slide-chapter .chapter-title{font-size:var(--text-4xl);font-weight:var(--font-weight-black);line-height:1.2;color:var(--color-text)}
+.slide-chapter .chapter-desc{font-size:var(--text-lg);color:var(--color-text-muted);margin-top:var(--space-md)}
+
+/* slide-content */
+.slide-content{background:var(--color-bg)}
+.slide-content .content-heading{font-size:var(--text-3xl);font-weight:var(--font-weight-black);margin-bottom:var(--space-xl);color:var(--color-text)}
+.slide-content .content-heading .sub{font-size:var(--text-xl);color:var(--color-text-muted);font-weight:var(--font-weight-normal)}
+
+/* slide-end */
+.slide-end{background:#0a0a0a;text-align:center;justify-content:center;color:#f0f0f0;position:relative;overflow:hidden}
+.slide-end::before{content:'';position:absolute;top:-30%;left:-20%;width:80%;height:160%;background:radial-gradient(ellipse at 40% 50%,rgba(217,119,87,.3) 0%,transparent 60%),radial-gradient(ellipse at 70% 40%,rgba(251,188,4,.15) 0%,transparent 50%);filter:blur(40px);z-index:0}
+.slide-end .slide-inner{z-index:1}
+
+/* slide-footer */
+.slide-footer{position:absolute;bottom:24px;left:80px;right:80px;display:flex;justify-content:space-between;align-items:flex-end;z-index:2}
+.slide-footer .footer-label{font-size:var(--text-xs);color:var(--color-text-subtle)}
+.slide-footer .footer-num{font-size:var(--text-sm);color:var(--color-text-subtle);font-variant-numeric:tabular-nums}
+
+/* utilities */
+.text-accent{color:var(--color-accent)}.text-muted{color:var(--color-text-muted)}.text-subtle{color:var(--color-text-subtle)}
+.text-success{color:var(--color-success)}.text-warning{color:var(--color-warning)}.text-danger{color:var(--color-danger)}.text-white{color:#fff}
+.text-center{text-align:center}.font-bold{font-weight:var(--font-weight-bold)}.font-black{font-weight:var(--font-weight-black)}
+.mt-sm{margin-top:var(--space-sm)}.mt-md{margin-top:var(--space-md)}.mt-lg{margin-top:var(--space-lg)}.mt-xl{margin-top:var(--space-xl)}.mt-2xl{margin-top:var(--space-2xl)}
+.mb-sm{margin-bottom:var(--space-sm)}.mb-md{margin-bottom:var(--space-md)}.mb-lg{margin-bottom:var(--space-lg)}.mb-xl{margin-bottom:var(--space-xl)}
+.tag{display:inline-block;padding:var(--space-xs) var(--space-md);border:1px solid var(--color-border);border-radius:999px;font-size:var(--text-xs);font-weight:var(--font-weight-medium);color:var(--color-text-muted)}
+.tag-accent{border-color:var(--color-accent);color:var(--color-accent);background:var(--color-accent-dim)}
+
+/* ===== COMPONENTS ===== */
+.event-badge{display:inline-block;background:rgba(217,119,87,.15);border:1px solid var(--color-accent);border-radius:6px;padding:4px 14px;font-size:var(--text-sm);font-weight:700;letter-spacing:.08em;color:var(--color-accent);margin-bottom:var(--space-lg)}
+
+.time-chip{display:inline-block;align-self:flex-start;background:var(--color-accent-dim);border:1px solid var(--color-border-accent);border-radius:999px;padding:4px 16px;font-size:var(--text-xs);font-weight:700;color:var(--color-accent);margin-bottom:var(--space-md);letter-spacing:.05em}
+
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:var(--space-lg);margin-top:var(--space-md)}
+.three-col{display:grid;grid-template-columns:1fr 1fr 1fr;gap:var(--space-md);margin-top:var(--space-lg)}
+.four-col{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:var(--space-md);margin-top:var(--space-lg)}
+.col-card{padding:var(--space-lg);border-radius:var(--radius-md);border:1.5px solid var(--color-border);background:var(--color-surface)}
+.col-card.accent{border-color:var(--color-accent);background:rgba(217,119,87,.08)}
+.col-card.success{border-color:var(--color-success);background:rgba(52,168,83,.08)}
+.col-card.danger{border-color:var(--color-danger);background:rgba(234,67,53,.08)}
+.col-card.warning{border-color:var(--color-warning);background:rgba(251,188,4,.08)}
+.col-card-label{font-size:var(--text-xs);font-weight:700;letter-spacing:.1em;color:var(--color-accent);margin-bottom:var(--space-sm)}
+.col-card-title{font-size:var(--text-lg);font-weight:700;margin-bottom:var(--space-sm)}
+.col-card ul{list-style:none}
+.col-card li{font-size:var(--text-sm);line-height:1.8;color:var(--color-text-secondary);padding-left:1.2em;text-indent:-1.2em}
+.col-card li::before{content:'・';color:var(--color-text-muted)}
+.col-card .icon{font-size:var(--text-2xl);margin-bottom:var(--space-sm)}
+.col-card .price{font-size:var(--text-2xl);font-weight:900;color:var(--color-text);line-height:1.1;margin:var(--space-sm) 0}
+.col-card .price small{font-size:var(--text-sm);color:var(--color-text-muted);font-weight:400}
+
+.goal-banner{font-size:var(--text-xl);font-weight:700;background:var(--color-accent-light);border:1.5px solid var(--color-border-accent);border-radius:var(--radius-lg);padding:var(--space-lg) var(--space-xl);color:#fff;margin-bottom:var(--space-xl);line-height:1.5}
+
+.prompt-box{background:#0d1117;border:1px solid #30363d;border-radius:var(--radius-md);padding:var(--space-md) var(--space-lg);font-size:var(--text-base);line-height:1.9;color:#c9d1d9;white-space:pre-wrap;margin:var(--space-md) 0}
+.prompt-box::before{content:'📋 そのままコピペでOK';display:block;color:var(--color-accent);font-size:var(--text-xs);font-weight:700;margin-bottom:var(--space-sm)}
+
+.code-box{background:#0d1117;border:1px solid #30363d;border-radius:var(--radius-md);padding:var(--space-md) var(--space-lg);font-family:'SFMono-Regular',Consolas,'Courier New',monospace;font-size:var(--text-sm);line-height:1.9;color:#7ee787;white-space:pre-wrap;margin:var(--space-md) 0}
+.code-box::before{content:'⌨ ターミナルで実行';display:block;color:var(--color-text-muted);font-size:var(--text-xs);font-weight:700;margin-bottom:var(--space-sm);font-family:var(--font-primary)}
+
+.file-box{background:#0d1117;border:1px solid #30363d;border-radius:var(--radius-md);padding:var(--space-md) var(--space-lg);font-family:'SFMono-Regular',Consolas,'Courier New',monospace;font-size:var(--text-sm);line-height:1.8;color:#c9d1d9;white-space:pre-wrap;margin:var(--space-md) 0}
+.file-box::before{content:attr(data-file);display:block;color:var(--color-accent);font-size:var(--text-xs);font-weight:700;margin-bottom:var(--space-sm);font-family:var(--font-primary)}
+.file-box .k{color:#79c0ff}.file-box .s{color:#a5d6ff}.file-box .c{color:#8b949e}
+
+.callout{padding:var(--space-md) var(--space-lg);border-radius:0 var(--radius-md) var(--radius-md) 0;font-size:var(--text-sm);line-height:1.7;margin-top:var(--space-lg)}
+.callout-note{background:rgba(251,188,4,.08);border-left:5px solid var(--color-warning);color:var(--color-text-secondary)}
+.callout-danger{background:rgba(234,67,53,.08);border-left:5px solid var(--color-danger);color:var(--color-text-secondary)}
+.callout-ok{background:rgba(52,168,83,.08);border-left:5px solid var(--color-success);color:var(--color-text-secondary)}
+
+.comp-table{width:100%;border-collapse:collapse;margin-top:var(--space-lg)}
+.comp-table th{padding:14px 20px;font-size:var(--text-sm);font-weight:700;color:var(--color-text-muted);border-bottom:2px solid var(--color-border);text-align:left}
+.comp-table th.accent{color:var(--color-accent);border-bottom-color:var(--color-accent)}
+.comp-table td{padding:12px 20px;font-size:var(--text-sm);border-bottom:1px solid var(--color-border);text-align:left;color:var(--color-text-secondary);line-height:1.6}
+.comp-table td:first-child{font-weight:700;color:var(--color-text);white-space:nowrap}
+.comp-table .good{color:var(--color-success);font-weight:700}
+.comp-table .bad{color:var(--color-danger)}
+.comp-table tr:hover td{background:rgba(255,255,255,.02)}
+
+.check-list{list-style:none;margin-top:var(--space-md)}
+.check-list li{font-size:var(--text-lg);line-height:2.1;color:var(--color-text-secondary)}
+.check-list li::before{content:'☐';color:var(--color-accent);font-weight:700;margin-right:14px}
+
+.point-list{list-style:none;margin-top:var(--space-sm)}
+.point-list li{font-size:var(--text-base);line-height:1.9;color:var(--color-text-secondary);padding-left:1.4em;text-indent:-1.4em}
+.point-list li::before{content:'→';color:var(--color-accent);font-weight:700;margin-right:10px}
+
+.num-list{list-style:none;margin-top:var(--space-md);counter-reset:nl}
+.num-list li{font-size:var(--text-base);line-height:1.7;color:var(--color-text-secondary);padding-left:2.4em;position:relative;margin-bottom:var(--space-md);counter-increment:nl}
+.num-list li::before{content:counter(nl);position:absolute;left:0;top:2px;width:1.7em;height:1.7em;background:var(--color-accent-dim);border:1px solid var(--color-border-accent);border-radius:50%;color:var(--color-accent);font-weight:700;font-size:var(--text-sm);display:flex;align-items:center;justify-content:center}
+
+.flow-row{display:flex;align-items:center;gap:var(--space-md);flex-wrap:wrap;margin-top:var(--space-lg)}
+.flow-box{flex:1;min-width:140px;background:var(--color-surface);border:1.5px solid var(--color-border);border-radius:var(--radius-md);padding:var(--space-lg);text-align:center}
+.flow-box.accent{border-color:var(--color-accent);background:rgba(217,119,87,.08)}
+.flow-box .fb-title{font-size:var(--text-base);font-weight:700;color:var(--color-text)}
+.flow-box .fb-desc{font-size:var(--text-xs);color:var(--color-text-muted);margin-top:var(--space-xs)}
+.flow-arrow{font-size:var(--text-xl);color:var(--color-accent);font-weight:700}
+
+.agenda-list{list-style:none;margin-top:var(--space-md)}
+.agenda-list li{display:flex;align-items:baseline;gap:var(--space-lg);padding:12px 0;border-bottom:1px solid var(--color-border);font-size:var(--text-lg)}
+.agenda-list .ag-no{font-size:var(--text-xl);font-weight:900;color:var(--color-accent);opacity:.5;min-width:2.4em}
+.agenda-list .ag-title{font-weight:700;color:var(--color-text)}
+.agenda-list .ag-desc{font-size:var(--text-sm);color:var(--color-text-muted);margin-left:auto;text-align:right}
+
+/* 3色データ分類 */
+.data-row{display:flex;align-items:stretch;gap:var(--space-md);margin-top:var(--space-md)}
+.data-card{flex:1;border-radius:var(--radius-md);padding:var(--space-lg);border:1.5px solid var(--color-border)}
+.data-card .dc-dot{font-size:var(--text-2xl);line-height:1}
+.data-card .dc-title{font-size:var(--text-lg);font-weight:900;margin:var(--space-sm) 0}
+.data-card .dc-items{font-size:var(--text-sm);color:var(--color-text-secondary);line-height:1.7}
+.data-card .dc-rule{font-size:var(--text-xs);font-weight:700;margin-top:var(--space-md);padding-top:var(--space-sm);border-top:1px dashed var(--color-border)}
+.data-card.red{border-color:var(--color-danger);background:rgba(234,67,53,.07)}
+.data-card.yellow{border-color:var(--color-warning);background:rgba(251,188,4,.07)}
+.data-card.green{border-color:var(--color-success);background:rgba(52,168,83,.07)}
+
+/* ナビ */
+.fixed-nav{position:fixed;top:28px;left:28px;z-index:9999}
+.fixed-nav-btn{width:48px;height:48px;border-radius:50%;border:none;background:var(--color-accent);color:#fff;font-size:22px;cursor:pointer;box-shadow:0 4px 20px rgba(0,0,0,.5);display:flex;align-items:center;justify-content:center;transition:transform .2s}
+.fixed-nav-btn:hover{transform:scale(1.1)}
+.fixed-nav-menu{display:none;position:absolute;top:60px;left:0;background:#1a1a1a;border:1px solid rgba(255,255,255,.12);border-radius:12px;padding:8px 0;min-width:480px;box-shadow:0 8px 32px rgba(0,0,0,.6);max-height:82vh;overflow-y:auto}
+.fixed-nav.open .fixed-nav-menu{display:block}
+.fixed-nav-menu a{display:flex;align-items:center;gap:10px;padding:10px 22px;color:#e5e5e5;text-decoration:none;font-size:15px;transition:background .15s}
+.fixed-nav-menu a:hover{background:rgba(255,255,255,.08)}
+.fixed-nav-menu a .nav-num{color:var(--color-accent);font-weight:700;font-size:12px;min-width:30px}
+.fixed-nav-menu .nav-sec{padding:10px 22px 4px;font-size:11px;letter-spacing:.12em;color:var(--color-text-subtle);font-weight:700;text-transform:uppercase;border-top:1px solid rgba(255,255,255,.06);margin-top:4px}
+html{scroll-behavior:smooth;overflow-y:auto}
+button,a{-webkit-tap-highlight-color:transparent}
+  </style>
+</head>
+<body>
+
+<!-- ナビゲーション -->
+<div class="fixed-nav" id="fixedNav">
+  <button class="fixed-nav-btn" onclick="document.getElementById('fixedNav').classList.toggle('open')">☰</button>
+  <div class="fixed-nav-menu">
+    <a href="#top"><span class="nav-num">▶</span>タイトル</a>
+    <a href="#overview"><span class="nav-num">◎</span>4点セットの全体像</a>
+    <div class="nav-sec">① ｜ md設定</div>
+    <a href="#secA"><span class="nav-num">→</span>事務所の運用憲法</a>
+    <a href="#mdwhat"><span class="nav-num">①-1</span>2種類のファイルと置き場所</a>
+    <a href="#rulesfiles"><span class="nav-num">①-2</span>rules/の中身（persona・context7）</a>
+    <a href="#mdsteps"><span class="nav-num">①-3</span>使い方3ステップ</a>
+    <a href="#claudemd"><span class="nav-num">①-4</span>CLAUDE.mdとは</a>
+    <a href="#pillars"><span class="nav-num">①-5</span>中身の3本柱</a>
+    <a href="#grow"><span class="nav-num">①-6</span>薄く置いて育てる</a>
+    <a href="#mycm"><span class="nav-num">例</span>実例：構成マップ</a>
+    <a href="#mycmwhy"><span class="nav-num">例</span>直書きと@の考え方</a>
+    <a href="#rules"><span class="nav-num">例</span>ルール詳細を@で外出し</a>
+    <a href="#rulesdetail"><span class="nav-num">例</span>ルール詳細フォルダの中身</a>
+    <div class="nav-sec">② ｜ セキュリティ</div>
+    <a href="#secSec"><span class="nav-num">→</span>仕組みで担保する</a>
+    <a href="#secwhats"><span class="nav-num">②-1</span>何が入っているか</a>
+    <a href="#secrisk"><span class="nav-num">②-2</span>どんな事故が起きるか</a>
+    <a href="#secwhy"><span class="nav-num">②-3</span>なぜ対策が必要か</a>
+    <a href="#secdesign"><span class="nav-num">②-3</span>どんな対策か</a>
+    <a href="#secfolder"><span class="nav-num">②-4</span>フォルダの中でどう守るか</a>
+    <a href="#secset"><span class="nav-num">②-4</span>鍵と権限の設定</a>
+    <a href="#secsteps"><span class="nav-num">②-5</span>導入手順・動作確認</a>
+    <div class="nav-sec">③ ｜ Memory</div>
+    <a href="#secMem"><span class="nav-num">→</span>動く事実を覚える</a>
+    <a href="#memrole"><span class="nav-num">③-1</span>CLAUDE.mdとの使い分け</a>
+    <a href="#memtypes"><span class="nav-num">③-2</span>4つのtype</a>
+    <a href="#memcheck"><span class="nav-num">③-3</span>動作確認</a>
+    <div class="nav-sec">④ ｜ Hooks</div>
+    <a href="#secHooks"><span class="nav-num">→</span>前提を忘れない仕掛け</a>
+    <a href="#hooksdetail"><span class="nav-num">④-1</span>2本のフック</a>
+    <a href="#hookscheck"><span class="nav-num">④-2</span>動作確認</a>
+    <div class="nav-sec">仕上げ</div>
+    <a href="#firstcall"><span class="nav-num">→</span>最初の一声</a>
+    <a href="#end"><span class="nav-num">▶</span>まとめ</a>
+  </div>
+</div>
+
+<div class="progress-bar" id="progressBar"></div>
+
+<div class="slide-deck">
+
+  <!-- ===== 1. タイトル ===== -->
+  <section id="top" class="slide slide-title">
+    <div class="slide-inner">
+      <div style="margin-bottom:var(--space-md)">
+        <span class="event-badge">畠山式AI税理士ブートキャンプ ／ 配布テンプレート解説</span>
+      </div>
+      <div class="title-main">配布テンプレート<br><span style="color:var(--color-accent)">4点セット</span>の<br>中身を理解する</div>
+      <div class="title-sub">①md設定 ②セキュリティ ③メモリ ④Hooks。Googleドライブで配っているフォルダの「README.md」を、実例つきでそのまま解説するページ。時間がある人だけ読めばOK。</div>
+      <div class="title-meta">講師：畠山謙人 公認会計士・税理士</div>
+    </div>
+    <div class="slide-footer"><span class="footer-label"></span><span class="footer-num"></span></div>
+  </section>
+
+  <!-- ===== 2. 4点セットの全体像 ===== -->
+  <section id="overview" class="slide slide-content">
+    <div class="slide-inner">
+      <h2 class="content-heading">4点セットの全体像 <span class="sub">（README.md より）</span></h2>
+      <p style="font-size:var(--text-base);color:var(--color-text-secondary)">配布フォルダの中身はこの4つ。<b class="text-accent">①→②→③→④の順番</b>で設置するのがおすすめ。後のフォルダほど、前のフォルダの設置物（特にCLAUDE.mdと.claudeフォルダ）を前提にしているから。</p>
+      <table class="comp-table">
+        <thead><tr><th class="accent">順番</th><th>フォルダ</th><th>何をする</th><th>所要時間目安</th></tr></thead>
+        <tbody>
+          <tr><td>①</td><td>セットアップ-mdファイル</td><td>AIの名前・性格（persona.md）と、事務所のルール（CLAUDE.md）を設定</td><td>20〜30分</td></tr>
+          <tr><td>②</td><td>セットアップ-セキュリティ</td><td>「.env」の誤読み取り・外部送信・「rm -rf」事故を防ぐロックを設置</td><td>20〜30分</td></tr>
+          <tr><td>③</td><td>セットアップ-メモリ</td><td>「前にも言いましたよね」を実現するメモ帳の仕組みを設置</td><td>15〜30分</td></tr>
+          <tr><td>④</td><td>セットアップ-Hooks</td><td>長い会話・圧縮後も前提を忘れない仕掛けを設置</td><td>10〜15分</td></tr>
+        </tbody>
+      </table>
+      <div class="callout callout-ok">合計1〜1.5時間程度。一度に終わらせなくてOK、何回かに分けて進めて構わない。Claude Codeに「READMEを読んで順番に設置して」と丸ごと渡せば、必要な質問をしながら進めてくれる。</div>
+    </div>
+    <div class="slide-footer"><span class="footer-label"></span><span class="footer-num"></span></div>
+  </section>
+
+  <!-- ===================== A ===================== -->
+  <section id="secA" class="slide slide-chapter">
+    <div class="slide-inner">
+      <div class="chapter-number">①</div>
+      <div class="chapter-title">md設定（CLAUDE.md）</div>
+      <div class="chapter-desc">事務所の運用憲法。AIに毎回ゼロから説明しなくて済むよう、ルールを1枚に書く</div>
+    </div>
+    <div class="slide-footer"><span class="footer-label"></span><span class="footer-num"></span></div>
+  </section>
+
+  <!-- ===== ①-1 2種類のファイルと置き場所 ===== -->
+  <section id="mdwhat" class="slide slide-content">
+    <div class="slide-inner">
+      <span class="time-chip">①-1 ｜ 入っているもの・置き場所</span>
+      <h2 class="content-heading">2種類のファイルを、2か所に置く</h2>
+      <table class="comp-table">
+        <thead><tr><th class="accent">種類</th><th>何のため</th><th>いつ効く</th><th>置き場所</th></tr></thead>
+        <tbody>
+          <tr><td>グローバルルール<br><span class="text-muted" style="font-weight:400">（rules/の中身）</span></td><td>persona.md（AIの性格・口調）＋ context7.md（最新ドキュメントを見てから答えるルール）の2ファイル</td><td>毎回・すべての作業で自動的に</td><td>Windows: <code>%USERPROFILE%\.claude\rules\</code><br>Mac: <code>~/.claude/rules/</code></td></tr>
+          <tr><td>CLAUDE.md</td><td>「この事務所・この案件ではこうして」という業務マニュアル</td><td>そのフォルダで作業するときだけ</td><td>作業したいフォルダの直下</td></tr>
+        </tbody>
+      </table>
+      <div class="callout callout-note">ざっくり言うと、グローバルルール＝AI（あなたの分身）の「性格・クセ」、CLAUDE.md＝その現場の「業務マニュアル」。.claudeフォルダが見つからないときは、一度Claude Codeを起動すると自動で作られる。</div>
+    </div>
+    <div class="slide-footer"><span class="footer-label"></span><span class="footer-num"></span></div>
+  </section>
+
+  <!-- ===== ①-2 rules/の中身 ===== -->
+  <section id="rulesfiles" class="slide slide-content">
+    <div class="slide-inner">
+      <span class="time-chip">①-2 ｜ rules/の中身</span>
+      <h2 class="content-heading">rules/に入っているのは2ファイルだけ</h2>
+      <table class="comp-table">
+        <thead><tr><th class="accent">ファイル</th><th>何を書くか</th><th>必須？</th></tr></thead>
+        <tbody>
+          <tr><td>persona.md</td><td>名前・役割・性格・呼び方・テンション・話し方を &lt; &gt; に埋める「キャラクター設定」</td><td>基本これだけでOK</td></tr>
+          <tr><td>context7.md</td><td>ライブラリ・API等を扱うとき、学習データに頼らずContext7 MCPで最新ドキュメントを見てから答えるルール</td><td>プログラミングをしない人は入れなくてよい</td></tr>
+        </tbody>
+      </table>
+      <div class="file-box" data-file="📄 persona.md（抜粋）">- 名前: &lt;AIに付けたい名前（例：あおい）&gt;
+- 役割: &lt;事務所の秘書／アシスタント など&gt;
+- 性格: &lt;明るくて丁寧、頼れるしっかり者 など&gt;
+- ユーザーの呼び方: &lt;所長、〇〇さん など&gt;
+- テンション: &lt;フレンドリー／落ち着いた など&gt;
+
+<span class="c">## 自己認識</span>
+「&lt;名前&gt;」＝この AI 自身</div>
+      <div class="callout callout-note">業務の正確さ・実行力はキャラ付けで落とさない、と本文に明記されている。数字・税務・会計の説明は通常どおり正確に行う前提のテンプレート。</div>
+    </div>
+    <div class="slide-footer"><span class="footer-label"></span><span class="footer-num"></span></div>
+  </section>
+
+  <!-- ===== ①-3 使い方3ステップ ===== -->
+  <section id="mdsteps" class="slide slide-content">
+    <div class="slide-inner">
+      <span class="time-chip">①-3 ｜ 使い方</span>
+      <h2 class="content-heading">3ステップで終わる</h2>
+      <div class="num-list">
+        <li><b>コピー</b>：上の置き場所に、それぞれのファイルをコピーする</li>
+        <li><b>書き換え</b>：ファイルを開いて &lt; &gt; の部分を自分用に直す</li>
+        <li><b>再起動</b>：Claude Codeを開き直すと、新しい設定が反映される</li>
+      </div>
+      <div class="callout callout-danger">個人情報・パスワード・口座番号などは書かない（設定ファイルは毎回読み込まれるため）。最初は「名前と口調だけ」から始め、慣れたら足していく。設定がおかしくなったら、そのファイルを消すか中身を空にすれば元に戻る。</div>
+    </div>
+    <div class="slide-footer"><span class="footer-label"></span><span class="footer-num"></span></div>
+  </section>
+
+  <!-- ===== CLAUDE.mdとは ===== -->
+  <section id="claudemd" class="slide slide-content">
+    <div class="slide-inner">
+      <span class="time-chip">①-4 ｜ CLAUDE.mdとは</span>
+      <h2 class="content-heading">CLAUDE.md ＝ AIに渡す番頭マニュアル</h2>
+      <div class="two-col">
+        <div class="col-card danger">
+          <div class="col-card-label" style="color:var(--color-danger)">CLAUDE.mdが無いと</div>
+          <div class="col-card-title text-danger">毎回「何も知らない新人」</div>
+          <ul>
+            <li>事務所のやり方を毎回イチから説明</li>
+            <li>前提が抜けて見当違いの答え</li>
+          </ul>
+        </div>
+        <div class="col-card accent">
+          <div class="col-card-label">CLAUDE.mdがあると</div>
+          <div class="col-card-title text-accent">「うちを分かってる番頭」</div>
+          <ul>
+            <li>最初に渡すマニュアルを毎回読んでから動く</li>
+            <li>事務所の前提を踏まえて返ってくる</li>
+          </ul>
+        </div>
+      </div>
+      <div class="callout callout-note">配布テンプレートのCLAUDE.mdには「基本情報」「Claudeにしてほしいこと」「フォルダ構成」「守ってほしいルール」「成果物の形式」「してほしくないこと」の欄がすでに用意されている。&lt; &gt;を埋めるだけで使い始められる。</div>
+    </div>
+    <div class="slide-footer"><span class="footer-label"></span><span class="footer-num"></span></div>
+  </section>
+
+  <!-- ===== 3本柱 ===== -->
+  <section id="pillars" class="slide slide-content">
+    <div class="slide-inner">
+      <span class="time-chip">①-5 ｜ 中身の3本柱</span>
+      <h2 class="content-heading">中身の3本柱</h2>
+      <div class="three-col">
+        <div class="col-card success">
+          <div class="col-card-label" style="color:var(--color-success)">DO ｜ やること</div>
+          <ul>
+            <li>このフォルダ内のPDFを読んで要約・整理する</li>
+            <li>仕訳の下書き・freee登録用CSVを作る</li>
+            <li>メール・お礼状の下書きを作る</li>
+          </ul>
+        </div>
+        <div class="col-card danger">
+          <div class="col-card-label" style="color:var(--color-danger)">DON'T ｜ しないこと</div>
+          <ul>
+            <li>数字は元資料と照合せず推測で埋めない</li>
+            <li>個人情報（マイナンバー・口座番号等）は書き出さない</li>
+            <li>勝手にfreeeへ本登録しない（下書き・CSVまで）</li>
+            <li>顧問先名を外部サービスに送信しない</li>
+          </ul>
+        </div>
+        <div class="col-card accent">
+          <div class="col-card-label">進め方</div>
+          <ul>
+            <li>不確かなときは断定せず「確認が必要」と伝える</li>
+            <li>大きな変更・送信・登録の前には一度確認を取る</li>
+          </ul>
+        </div>
+      </div>
+      <div class="callout callout-danger">配布テンプレートのCLAUDE.mdは、この3本柱（Do／Don't／進め方）の欄がすでに枠として用意されている。畠山事務所の例では「税務判断は人、実行はAI」の線を一番上のDon'tに置いている。</div>
+    </div>
+    <div class="slide-footer"><span class="footer-label"></span><span class="footer-num"></span></div>
+  </section>
+
+  <!-- ===== 薄く置いて育てる ===== -->
+  <section id="grow" class="slide slide-content">
+    <div class="slide-inner">
+      <span class="time-chip">①-6 ｜ 育て方</span>
+      <h2 class="content-heading">憲法は薄く。最初から完璧じゃなくていい</h2>
+      <div class="two-col">
+        <div>
+          <div class="col-card-label">書き方のヒント</div>
+          <ul class="point-list">
+            <li>「いつも口で説明していること」を、そのまま箇条書きで書く</li>
+            <li>最初から完璧を目指さず、使いながら追記する</li>
+            <li>「これ毎回言ってるな」と思ったら、ここに足す</li>
+          </ul>
+          <div class="col-card-label mt-lg">育てる前提</div>
+          <ul class="point-list">
+            <li>運用しながら足していく</li>
+            <li>2回同じ注意をしたらルール化（Memory化、③で詳しく）</li>
+          </ul>
+        </div>
+        <div class="file-box" data-file="📄 CLAUDE.md（最小スタート）"><span class="c">## 🎯 このフォルダでClaudeにしてほしいこと</span>
+- 領収書PDFを読んで仕訳の下書きを作る
+
+<span class="c">## ✅ 守ってほしいルール</span>
+- 数字は必ず元資料と照合する
+- 個人情報はファイルに書き出さない
+
+<span class="c">## 🚫 してほしくないこと</span>
+- 勝手にfreeeへ本登録しない</div>
+      </div>
+      <div class="callout callout-ok">枠を全部埋めなくていい。「やってほしいこと」を数行、「してほしくないこと」を数行。それだけでもう「新人」が「番頭」になる。</div>
+    </div>
+    <div class="slide-footer"><span class="footer-label"></span><span class="footer-num"></span></div>
+  </section>
+
+  <!-- ===== 実例：構成マップ ===== -->
+  <section id="mycm" class="slide slide-content">
+    <div class="slide-inner">
+      <span class="time-chip">① ｜ ここまで育てるとどうなるか（実例）</span>
+      <h2 class="content-heading">実例：畠山事務所のCLAUDE.md</h2>
+      <p style="font-size:var(--text-base);color:var(--color-text-secondary)">配布テンプレートは1案件＝1フォルダのシンプルな形。これを事務所全体の運用に育てると、こういう骨格になる、という一例。</p>
+      <div class="file-box" data-file="📄 CLAUDE.md（実物の骨格）"><span class="c"># 畠山謙人税理士事務所 AI運用憲法 ｜ 宣言：実行部隊</span>
+## 進め方   理解 → 承認 → 実行
+## Do       経理 / TODO / 顧問先 / 発信
+## Don't    税務判断しない / 秘密情報 / 個人情報 / Downloads直下
+## 業務ログ / エージェント使い分け / マシン判別
+<span class="c">　↑ ここまで「背骨」は本体に直書き</span>
+
+## ルール詳細
+<span class="k">@</span>00_master/rules/　accounting・output-paths・boundaries・client-acceptance
+<span class="c">　↑ 「肉付け」の詳細は @ で別ファイルに外出し</span></div>
+      <div class="callout callout-note">配布テンプレートのCLAUDE.mdは「1ファイルに直書き」がスタート地点。案件・顧問先が増えてきたら、この実例のように@でルール詳細フォルダに分割していくと運用しやすい。</div>
+    </div>
+    <div class="slide-footer"><span class="footer-label"></span><span class="footer-num"></span></div>
+  </section>
+
+  <!-- ===== 実例：直書きと@の考え方 ===== -->
+  <section id="mycmwhy" class="slide slide-content">
+    <div class="slide-inner">
+      <span class="time-chip">① ｜ ここまで育てるとどうなるか（実例）</span>
+      <h2 class="content-heading">なぜ直書き、なぜ@で切るか</h2>
+      <div class="two-col">
+        <div class="col-card accent">
+          <div class="col-card-label">本体に直書き ＝ 背骨</div>
+          <div class="col-card-title text-accent">毎回かならず効かせる核</div>
+          <ul>
+            <li>立ち位置の宣言（実行部隊）</li>
+            <li>進め方（理解→承認→実行）</li>
+            <li>Do / Don't（税務判断しない 等）</li>
+            <li>業務ログ・運用ルール</li>
+          </ul>
+        </div>
+        <div class="col-card success">
+          <div class="col-card-label" style="color:var(--color-success)">@で外出し ＝ 肉付け</div>
+          <div class="col-card-title text-success">必要なときに見れば足りる詳細</div>
+          <ul>
+            <li>仕訳の細則・受注チェック13項目</li>
+            <li>成果物の置き場所ルール</li>
+            <li>本体が長くなりすぎる中身</li>
+          </ul>
+        </div>
+      </div>
+      <ul class="point-list">
+        <li><span class="text-accent">本体は短く保つ</span> ｜ 1スクロールで「うちのAIはこう動く」が掴める長さに</li>
+        <li><span class="text-accent">背骨は直書き、肉付けは@</span> ｜ 「絶対」は本体、細則は別ファイル</li>
+        <li><span class="text-accent">更新の単位で切る</span> ｜ 仕訳ルールだけ直すとき、人格ファイルを触らずに済む</li>
+      </ul>
+      <div class="callout callout-note">@は起動時にまとめて読み込まれ常駐する。だから「軽くするため」ではなく「見通しのため」に切る、が正しい理解。</div>
+    </div>
+    <div class="slide-footer"><span class="footer-label"></span><span class="footer-num"></span></div>
+  </section>
+
+  <!-- ===== B-1 ルール詳細は@で外出し ===== -->
+  <section id="rules" class="slide slide-content">
+    <div class="slide-inner">
+      <span class="time-chip">① ｜ ここまで育てるとどうなるか（実例）</span>
+      <h2 class="content-heading">ルール詳細は@で外出し</h2>
+      <p style="font-size:var(--text-base);color:var(--color-text-secondary)">CLAUDE.mdに全部書くと分厚くなり、人もAIも要点を見失う。詳細は別ファイル（00_master/rules/）に切り出し、憲法から@で読み込む。<b class="text-accent">これはテンプレートのrules/（グローバルなキャラ設定）とは別物</b>で、案件・事務所固有の業務ルールを置く場所。</p>
+      <div class="two-col">
+        <div class="file-box" data-file="📄 CLAUDE.md（抜粋）"><span class="c"># ルール詳細</span>
+
+@00_master/rules/accounting.md
+@00_master/rules/output-paths.md
+@00_master/rules/boundaries.md</div>
+        <div class="file-box" data-file="📄 accounting.md（事務所固有の判断）">- 飲食 1万円以下 → 会議費
+- 飲食 1万円超  → 交際費
+- 海外SaaS → 通信費（税区分対象外）
+
+<span class="c"># 自然な日本語で書けばいい</span></div>
+      </div>
+      <div class="callout callout-ok">これを一度書けば、AIが毎回この基準で分類する。ルールを書く ＝ 新人に渡すマニュアルを書く。</div>
+    </div>
+    <div class="slide-footer"><span class="footer-label"></span><span class="footer-num"></span></div>
+  </section>
+
+  <!-- ===== B-1 ルール詳細フォルダの中身（実例） ===== -->
+  <section id="rulesdetail" class="slide slide-content">
+    <div class="slide-inner">
+      <span class="time-chip">① ｜ ここまで育てるとどうなるか（実例）</span>
+      <h2 class="content-heading">ルール詳細フォルダの中身 <span class="sub">（00_master/rules ｜ 4ファイル）</span></h2>
+      <table class="comp-table">
+        <thead><tr><th class="accent">ファイル</th><th>書いてある内容</th></tr></thead>
+        <tbody>
+          <tr><td>accounting.md</td><td>仕訳分類ルール。飲食1万円で会議費／交際費、畠山への支払＝支払報酬料、海外SaaS＝通信費、外貨は税区分対象外、freee科目は借方／貸方表記</td></tr>
+          <tr><td>output-paths.md</td><td>成果物の置き場所。顧問先→30_顧問先、ツール→20_事務所/tools、経理レポート→finance、発信→40_発信。Downloads直下は禁止</td></tr>
+          <tr><td>boundaries.md</td><td>判断の境界線。AIが処理してよい範囲（過去パターン一致）と畠山に確認する範囲（新規・グレー）。理解→承認→実行</td></tr>
+          <tr><td>client-acceptance.md</td><td>新規受注チェックリスト13問。解約23社の分析から作成。YESが危険シグナル</td></tr>
+        </tbody>
+      </table>
+      <div class="callout callout-ok">どれも「AIへの命令」。1ファイル＝1テーマで切ると、仕訳ルールだけ直すとき他に触れずに済む。テンプレートの<code>rules/</code>（persona.md・context7.md）とは別物の、案件・事務所固有の詳細置き場。</div>
+    </div>
+    <div class="slide-footer"><span class="footer-label"></span><span class="footer-num"></span></div>
+  </section>
+
+  <!-- ===================== ② セキュリティ ===================== -->
+  <section id="secSec" class="slide slide-chapter">
+    <div class="slide-inner">
+      <div class="chapter-number">②</div>
+      <div class="chapter-title">セキュリティ</div>
+      <div class="chapter-desc">顧客の機微情報（個人情報・マイナンバー・口座・証憑）を扱う前提で、気をつけるのではなく仕組みで担保する</div>
+    </div>
+    <div class="slide-footer"><span class="footer-label"></span><span class="footer-num"></span></div>
+  </section>
+
+  <!-- ===== ②-1 何が入っているか ===== -->
+  <section id="secwhats" class="slide slide-content">
+    <div class="slide-inner">
+      <span class="time-chip">②-1 ｜ 何が入っているか</span>
+      <h2 class="content-heading">4つの層で多重に防ぐ一式</h2>
+      <table class="comp-table">
+        <thead><tr><th class="accent">ファイル</th><th>役割</th></tr></thead>
+        <tbody>
+          <tr><td>settings.security.template.json</td><td>settings.jsonのセキュリティ部分（permissionsとhooks登録）のひな形</td></tr>
+          <tr><td>hooks/credential-guard.sh</td><td>認証情報ファイルの読み取りを検知して確認を求める</td></tr>
+          <tr><td>hooks/exfil-guard.sh</td><td>「ネットワーク送信＋認証情報」の組み合わせを即ブロック（漏洩対策の中核）</td></tr>
+          <tr><td>hooks/anomaly-guard.sh</td><td>大量削除・履歴破壊・リポジトリ誤公開・外部送信を検知して確認を求める</td></tr>
+          <tr><td>LLM判定フック（settings内蔵）</td><td>正規表現で拾いきれない手口を、AI自身に「漏洩の試みか」を判定させる4つ目の門番</td></tr>
+          <tr><td>.gitignore.template</td><td>機密ファイルをそもそもGit管理に入れないためのひな形</td></tr>
+          <tr><td>setup.sh / test-guards.sh</td><td>~/.claude/への半自動導入スクリプト／ガードが反応するかのセルフテスト</td></tr>
+        </tbody>
+      </table>
+      <div class="callout callout-note">settings.security.template.jsonには<span class="text-accent">①deny（即ブロック）→②ask（人間に確認）→③hooksガード（文脈判断・4種）→④.gitignore（入口で予防）</span>という多層防御（Defense in Depth）が設計されている。1つ破られても次で止める作り。</div>
+    </div>
+    <div class="slide-footer"><span class="footer-label"></span><span class="footer-num"></span></div>
+  </section>
+
+  <!-- ===== D-① 事故：リスクの地図 ===== -->
+  <section id="secrisk" class="slide slide-content">
+    <div class="slide-inner">
+      <span class="time-chip">②-2 ｜ どんな事故が起きるか</span>
+      <h2 class="content-heading">起こりうる事故を、種類で押さえる <span class="sub">（"うっかり"で起きるものばかり）</span></h2>
+      <table class="comp-table">
+        <thead><tr><th class="accent">リスクの種類</th><th>想定される事故</th></tr></thead>
+        <tbody>
+          <tr><td class="font-bold">① 認証情報の漏洩</td><td>AIが.envやトークンを読み、外部に送信してしまう</td></tr>
+          <tr><td class="font-bold">② プロンプトインジェクション</td><td>Webページやメールに仕込まれた「この秘密を送れ」という指示にAIが従う</td></tr>
+          <tr><td class="font-bold">③ 破壊的操作</td><td>大量ファイル削除、Git履歴の破壊、git push --forceで作業が消える</td></tr>
+          <tr><td class="font-bold">④ 意図しない公開</td><td>Privateリポジトリをうっかりpublic化、Driveの共有設定変更</td></tr>
+          <tr><td class="font-bold">⑤ 顧客情報の混入</td><td>個人情報や証憑をうっかりコミット・送信</td></tr>
+        </tbody>
+      </table>
+      <div class="callout callout-danger">どれも悪意ではなく「うっかり」で起きる。人の注意では防ぎきれない ＝ だから設定で塞ぐ。</div>
+    </div>
+    <div class="slide-footer"><span class="footer-label"></span><span class="footer-num"></span></div>
+  </section>
+
+  <!-- ===== D-② なぜ：入力は送信される ===== -->
+  <section id="secwhy" class="slide slide-content">
+    <div class="slide-inner">
+      <span class="time-chip">②-3 ｜ なぜ対策が必要か</span>
+      <h2 class="content-heading">守りの本体は「注意力」ではなく「設計」</h2>
+      <div class="goal-banner">AIに渡した会話・読ませたファイルの本文は、処理のため<span class="text-accent">外部（Anthropic）のサーバーに送信される</span> ＝ 仕様</div>
+      <div class="two-col">
+        <div class="col-card warning">
+          <div class="col-card-label" style="color:var(--color-warning)">ありがちな誤解</div>
+          <div class="col-card-title text-warning">「設定をオフにすれば送られない」</div>
+          <ul>
+            <li>止められるのは利用統計（テレメトリ）だけ。<span class="font-bold">入力そのものの送信は止められない</span></li>
+            <li>「送らせない設定」を探すより、「何を渡すか」を決める方が本質</li>
+          </ul>
+        </div>
+        <div class="col-card accent">
+          <div class="col-card-label">だから核心は</div>
+          <div class="col-card-title text-accent">「何を渡すか」を先に決める</div>
+          <ul>
+            <li>人は毎回は気をつけられない</li>
+            <li>最初に「渡さない物理境界」を作れば、あとは勝手に守られる</li>
+          </ul>
+        </div>
+      </div>
+      <div class="callout callout-note">事故の多くは「うっかり渡してしまう」こと。だから対策の方向は1つ ＝ 渡る前に、設定とフォルダで物理的に塞ぐ。</div>
+    </div>
+    <div class="slide-footer"><span class="footer-label"></span><span class="footer-num"></span></div>
+  </section>
+
+  <!-- ===== D-② 対策：リスク→設定の対応表 ===== -->
+  <section id="secdesign" class="slide slide-content">
+    <div class="slide-inner">
+      <span class="time-chip">②-3 ｜ どんな対策か</span>
+      <h2 class="content-heading">リスクは、配布テンプレートの設定で1対1に塞ぐ</h2>
+      <table class="comp-table">
+        <thead><tr><th class="accent">リスク</th><th>防ぐ設計（設定）</th></tr></thead>
+        <tbody>
+          <tr><td>① 認証情報の漏洩</td><td>settingsの<span class="text-accent">Read deny</span>が.env・.pem・credentials等を即ブロック／<span class="text-accent">credential-guard.sh</span>が命名ゆれを保険でask</td></tr>
+          <tr><td>② プロンプトインジェクション</td><td><span class="text-accent">exfil-guard.sh</span>が「送信＋認証情報」の組み合わせを即ブロック／<span class="text-accent">LLM判定フック</span>が正規表現をすり抜ける手口を二段構えで検知</td></tr>
+          <tr><td>③ 破壊的操作</td><td><span class="text-accent">Bash deny</span>がrm -rf等を遮断／<span class="text-accent">anomaly-guard.sh</span>が大量削除・履歴破壊を検知して確認を求める</td></tr>
+          <tr><td>④ 意図しない公開</td><td><span class="text-accent">anomaly-guard.sh</span>がリポジトリ誤公開を検知／GitHub・Driveの作成や共有変更はpermissions.askで人間が確認</td></tr>
+          <tr><td>⑤ 顧客情報の混入</td><td><span class="text-accent">.gitignore</span>で顧客データ・証憑をそもそもGit管理対象外に</td></tr>
+        </tbody>
+      </table>
+      <div class="callout callout-note">書類は項目に分けて〈上げる／マスク／上げない〉の3処分にするのも設計の一部。「会社名はマスク、口座番号は上げない」のようにフィールド単位で決める。</div>
+    </div>
+    <div class="slide-footer"><span class="footer-label"></span><span class="footer-num"></span></div>
+  </section>
+
+  <!-- ===== D-③ フォルダ構造で隔離 ===== -->
+  <section id="secfolder" class="slide slide-content">
+    <div class="slide-inner">
+      <span class="time-chip">②-4 ｜ フォルダの中でどう守るか<span class="sub">（実例）</span></span>
+      <h2 class="content-heading">フォルダ構造そのものが、最初の防御 <span class="sub">（顧問先・鍵・機密を物理的に分ける）</span></h2>
+      <div class="two-col">
+        <div class="file-box" data-file="🗂 作業フォルダの形（畠山さんの実例）">C:\AI-Office\
+├ CLAUDE.md          ルール・憲法
+├ .claude\skills\    スキル
+├ .env               鍵（gitに上げない）
+├ 顧問先\
+│  └ A社\2026年3月期\
+│     ├ 試算表.xlsx
+│     └ 申告書ドラフト.pdf
+├ _機密_除外\         deny に追記して遮断（要カスタマイズ）
+└ .git\              顧客データは.gitignoreで除外</div>
+        <div>
+          <ul class="point-list">
+            <li><span class="text-accent font-bold">1顧問先＝1フォルダ</span>で起動。A社の作業中にB社を読めない物理境界を作る</li>
+            <li>マイナンバー等を隔離したいフォルダ名（例：<span class="text-accent">_機密_除外</span>）は、<code>permissions.deny</code>に<code>Read(**/_機密_除外/**)</code>を自分で追記すれば遮断できる（テンプレートの初期値には入っていないカスタマイズ）</li>
+            <li>鍵は <span class="text-accent">.env</span>、git で管理するのは仕組みだけ。顧客データは <span class="text-accent">.gitignore</span> で必ず除外</li>
+          </ul>
+          <div class="callout callout-note">置き場所を最初に分けておけば、毎回の注意がいらない。フォルダの形 ＝ 守りの設計図。</div>
+        </div>
+      </div>
+    </div>
+    <div class="slide-footer"><span class="footer-label"></span><span class="footer-num"></span></div>
+  </section>
+
+  <!-- ===== D-③ 設定：鍵の隔離＋権限 ===== -->
+  <section id="secset" class="slide slide-content">
+    <div class="slide-inner">
+      <span class="time-chip">②-4 ｜ 鍵と権限の設定</span>
+      <h2 class="content-heading">鍵を隔離し、権限を絞る <span class="sub">（.env と settings）</span></h2>
+      <div class="two-col">
+        <div class="file-box" data-file="📄 .env（本物のキーはここだけに置く）">FREEE_TOKEN=xxxxxxxxxxxx
+ANTHROPIC_API_KEY=xxxxxxxxxxxx</div>
+        <div class="file-box" data-file="📄 .gitignore.template（抜粋）">.env / .env.* / *.pem / *.key
+credentials* / secrets* / token.json
+.claude/history.jsonl・cache/ 等
+*.csv / *.xlsx / 証憑/ / 顧客データ/</div>
+      </div>
+      <table class="comp-table" style="margin-top:var(--space-md)">
+        <thead><tr><th class="accent">settings.security.template.json</th><th>具体例</th></tr></thead>
+        <tbody>
+          <tr><td class="bad">deny（問答無用でブロック）</td><td><code>Read(**/.env*)</code> <code>Bash(curl*)</code> <code>Bash(wget*)</code> <code>Bash(rm -rf *)</code> 等18件</td></tr>
+          <tr><td class="text-warning">ask（人間に確認）</td><td><code>mcp__gmail__send_message</code> <code>mcp__github__create_repository</code> <code>mcp__slack__send_message</code> 等17件</td></tr>
+          <tr><td class="good">それ以外</td><td>自動でOK（読み取り・定型の登録など）</td></tr>
+        </tbody>
+      </table>
+      <div class="callout callout-ok">配布テンプレートの<span class="font-bold">settings.security.template.json</span>には、上のdeny/ask一覧と4つのhooksがあらかじめ書き込まれている。自分で1から作る必要はない。</div>
+    </div>
+    <div class="slide-footer"><span class="footer-label"></span><span class="footer-num"></span></div>
+  </section>
+
+  <!-- ===== ②-5 導入手順・動作確認 ===== -->
+  <section id="secsteps" class="slide slide-content">
+    <div class="slide-inner">
+      <span class="time-chip">②-5 ｜ 導入手順・動作確認</span>
+      <h2 class="content-heading">導入は5ステップ、確認はテストスクリプト1本</h2>
+      <div class="code-box">cd セットアップ-セキュリティ
+bash setup.sh                # hooksを~/.claude/hooks/にコピー＆パス置換
+# 画面の案内に沿ってsettings.jsonをマージ（既存設定は上書きしない）
+# Claude Codeを再起動
+bash test-guards.sh          # すべてPASSになればOK</div>
+      <div class="callout callout-danger">setup.shは既存のsettings.jsonを勝手に上書きしない。permissions.deny／permissions.ask／hooks.PreToolUseの3か所に「追記」する（丸ごと置換しない）。マージ前に必ず <code>settings.json.bak</code> でバックアップ。</div>
+      <div class="callout callout-note">これは「万能の盾」ではない。最後の砦は人間の確認。askで確認を求められたら内容を読んでから許可する。怪しい確認は迷わずNo、権限は最小限から始める。</div>
+    </div>
+    <div class="slide-footer"><span class="footer-label"></span><span class="footer-num"></span></div>
+  </section>
+
+  <!-- ===================== ③ メモリ ===================== -->
+  <section id="secMem" class="slide slide-chapter">
+    <div class="slide-inner">
+      <div class="chapter-number">③</div>
+      <div class="chapter-title">Memory（記憶）</div>
+      <div class="chapter-desc">CLAUDE.mdが「不変のルール」なら、Memoryは「動く事実」を残す場所。セッションを跨いで「前にも言いましたよね」を実現する</div>
+    </div>
+    <div class="slide-footer"><span class="footer-label"></span><span class="footer-num"></span></div>
+  </section>
+
+  <!-- ===== ③-1 CLAUDE.mdとの使い分け ===== -->
+  <section id="memrole" class="slide slide-content">
+    <div class="slide-inner">
+      <span class="time-chip">③-1 ｜ CLAUDE.mdとの使い分け</span>
+      <h2 class="content-heading">「憲法」と「動く事実」を分ける</h2>
+      <table class="comp-table">
+        <thead><tr><th class="accent">ファイル</th><th>役割</th><th>例</th></tr></thead>
+        <tbody>
+          <tr><td>CLAUDE.md</td><td>不変のルール・憲法</td><td>「税務判断しない」「フォントはメイリオUI」</td></tr>
+          <tr><td>Memory</td><td>動く事実・覚えておきたい個別事項</td><td>「A社案件は5/15が締切」「あの提案書のリンク」</td></tr>
+        </tbody>
+      </table>
+      <div class="callout callout-note">全部CLAUDE.mdに書くと、①ファイルが膨れて重要ルールが埋もれる ②終わった案件が消えず残り続ける ③「必要なときだけ」呼び出せない、という問題が起きる。だから分ける。</div>
+    </div>
+    <div class="slide-footer"><span class="footer-label"></span><span class="footer-num"></span></div>
+  </section>
+
+  <!-- ===== ③-2 4つのtype ===== -->
+  <section id="memtypes" class="slide slide-content">
+    <div class="slide-inner">
+      <span class="time-chip">③-2 ｜ 4つのtype</span>
+      <h2 class="content-heading">迷ったら feedback と reference から</h2>
+      <table class="comp-table">
+        <thead><tr><th class="accent">type</th><th>何を書く？</th><th>書かなくていいもの</th></tr></thead>
+        <tbody>
+          <tr><td>user</td><td>属性・経歴・恒常的な好み</td><td>名前・事務所名（CLAUDE.mdへ）</td></tr>
+          <tr><td>feedback</td><td>働き方の指示・修正（Why と How to apply必須）</td><td>一度きりの軽い修正</td></tr>
+          <tr><td>project</td><td>進行中の仕事・案件の進捗</td><td>終わった案件</td></tr>
+          <tr><td>reference</td><td>URL・DB ID・ダッシュボードリンク</td><td>1回しか使わないURL</td></tr>
+        </tbody>
+      </table>
+      <div class="callout callout-ok">feedbackは「同じ注意を2回したら書く」、referenceは「あのリンクどこだっけ」をなくす、と覚える。最初は3件で十分。</div>
+    </div>
+    <div class="slide-footer"><span class="footer-label"></span><span class="footer-num"></span></div>
+  </section>
+
+  <!-- ===== ③-3 動作確認 ===== -->
+  <section id="memcheck" class="slide slide-content">
+    <div class="slide-inner">
+      <span class="time-chip">③-3 ｜ 動作確認</span>
+      <h2 class="content-heading">置き場所と確認の一声</h2>
+      <div class="file-box" data-file="📁 置き場所">[ホームフォルダ]/.claude/projects/&lt;プロジェクトslug&gt;/memory/</div>
+      <div class="prompt-box">私のメモリ一覧を教えて。type別に整理してくれる？</div>
+      <div class="callout callout-danger">顧客名・金額くらいはOKだが、マイナンバー・口座番号・パスワードは書かない。索引（MEMORY.md）は太らせず、1行ポインタだけにする。</div>
+    </div>
+    <div class="slide-footer"><span class="footer-label"></span><span class="footer-num"></span></div>
+  </section>
+
+  <!-- ===================== ④ Hooks ===================== -->
+  <section id="secHooks" class="slide slide-chapter">
+    <div class="slide-inner">
+      <div class="chapter-number">④</div>
+      <div class="chapter-title">Hooks</div>
+      <div class="chapter-desc">CLAUDE.md・Memoryまでで前提は揃った。長い会話・圧縮（/compact）後も前提を忘れないよう、自動で立て直す仕掛けを入れる</div>
+    </div>
+    <div class="slide-footer"><span class="footer-label"></span><span class="footer-num"></span></div>
+  </section>
+
+  <!-- ===== ④-1 2本のフック ===== -->
+  <section id="hooksdetail" class="slide slide-content">
+    <div class="slide-inner">
+      <span class="time-chip">④-1 ｜ 入っているもの</span>
+      <h2 class="content-heading">最小構成の2本</h2>
+      <table class="comp-table">
+        <thead><tr><th class="accent">フック</th><th>タイミング</th><th>効果</th></tr></thead>
+        <tbody>
+          <tr><td>session-start.sh</td><td>セッション開始時（毎回）</td><td>今日の日付＋CLAUDE.mdの冒頭を自動注入</td></tr>
+          <tr><td>post-compact.sh</td><td>/compact 後</td><td>圧縮で消えた前提情報を再注入</td></tr>
+        </tbody>
+      </table>
+      <div class="callout callout-ok">「今日は何日ですか」と聞かなくていい。CLAUDE.mdの大事なルールが毎セッション冒頭で読まれ、/compact後も「前提を忘れたClaude」になりにくい。</div>
+    </div>
+    <div class="slide-footer"><span class="footer-label"></span><span class="footer-num"></span></div>
+  </section>
+
+  <!-- ===== ④-2 動作確認 ===== -->
+  <section id="hookscheck" class="slide slide-content">
+    <div class="slide-inner">
+      <span class="time-chip">④-2 ｜ 動作確認</span>
+      <h2 class="content-heading">起動して確認するだけ</h2>
+      <div class="file-box" data-file="✅ こう表示されれば成功">=== SESSION START ===
+Today: 2026-07-01
+--- CLAUDE.md (冒頭30行) ---
+（CLAUDE.mdの内容がここに表示される）
+----------------------------
+====================</div>
+      <div class="callout callout-note">前提条件は「①md設定」でCLAUDE.mdを設置済みであること。設置の順番は ①md → ②セキュリティ → ③メモリ → ④Hooks が推奨。</div>
+    </div>
+    <div class="slide-footer"><span class="footer-label"></span><span class="footer-num"></span></div>
+  </section>
+
+  <!-- ===== 最初の一声 ===== -->
+  <section id="firstcall" class="slide slide-content">
+    <div class="slide-inner">
+      <h2 class="content-heading">仕上げ：最初の一声で確かめる</h2>
+      <p style="font-size:var(--text-base);color:var(--color-text-secondary)">①〜④を全部入れたら、最後に一声かける。下のどれかを打ってみる。</p>
+      <div class="prompt-box">今日のタスク教えて
+この領収書、どう仕訳する？
+うちの事務所のルールを教えて</div>
+      <div class="callout callout-ok">ちゃんと「自分の事務所として」反応すれば成功（persona.mdとCLAUDE.mdを読んでいる証拠）。README.mdの「全部終わったあとの動作確認（3つ聞いてみる）」と同じ内容。</div>
+      <div class="callout callout-note">入れて終わりじゃない。一声かけて「通じる」のを確かめる。完璧じゃなくていい。今日起動できたら勝ち。</div>
+    </div>
+    <div class="slide-footer"><span class="footer-label"></span><span class="footer-num"></span></div>
+  </section>
+
+  <!-- ===== まとめ ===== -->
+  <section id="end" class="slide slide-end">
+    <div class="slide-inner">
+      <div style="margin-bottom:var(--space-lg)"><span class="event-badge">WRAP UP</span></div>
+      <div style="font-size:var(--text-4xl);font-weight:var(--font-weight-black);line-height:1.25;color:#fff">①md → ②セキュリティ →<br><span style="color:var(--color-accent)">③メモリ → ④Hooks</span></div>
+      <div style="font-size:var(--text-lg);color:rgba(255,255,255,.7);margin-top:var(--space-xl)">この順番で1つずつ設置すれば、配布テンプレートはそのまま動く。完璧じゃなくていい、今日起動できたら勝ち。</div>
+      <div style="font-size:var(--text-base);color:rgba(255,255,255,.5);margin-top:var(--space-2xl)">わからないことがあれば、ブートキャンプで気軽に聞いてください。</div>
+      <div style="text-align:right;font-size:var(--text-xs);color:rgba(255,255,255,.2);margin-top:var(--space-3xl)">畠山式AI税理士ブートキャンプ　©2026</div>
+    </div>
+  </section>
+
+</div>
+
+<script>
+// ナビ閉じる
+document.addEventListener('click', e => {
+  if (!e.target.closest('#fixedNav')) {
+    document.getElementById('fixedNav').classList.remove('open');
+  }
+});
+// プログレスバー
+window.addEventListener('scroll', () => {
+  const scrolled = window.scrollY;
+  const total = document.documentElement.scrollHeight - window.innerHeight;
+  document.getElementById('progressBar').style.width = (total > 0 ? scrolled / total * 100 : 0) + '%';
+});
+// ページ番号
+(function(){
+  const slides = Array.from(document.querySelectorAll('.slide'));
+  slides.forEach((s, i) => {
+    const num = s.querySelector('.footer-num');
+    if (num) num.textContent = (i + 1) + ' / ' + slides.length;
+    const label = s.querySelector('.footer-label');
+    if (label) label.textContent = '畠山式AI税理士ブートキャンプ ／ 配布テンプレート解説';
+  });
+})();
+// 矢印キーでスライド移動
+(function(){
+  const slides = Array.from(document.querySelectorAll('.slide'));
+  function currentIndex() {
+    let best = 0, bestDist = Infinity;
+    slides.forEach((s, i) => {
+      const dist = Math.abs(s.getBoundingClientRect().top);
+      if (dist < bestDist) { bestDist = dist; best = i; }
+    });
+    return best;
+  }
+  document.addEventListener('keydown', e => {
+    if (e.key === 'ArrowRight' || e.key === 'ArrowDown' || e.key === ' ' || e.key === 'Enter') {
+      e.preventDefault();
+      const next = Math.min(currentIndex() + 1, slides.length - 1);
+      slides[next].scrollIntoView({ behavior: 'smooth' });
+    } else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
+      e.preventDefault();
+      const prev = Math.max(currentIndex() - 1, 0);
+      slides[prev].scrollIntoView({ behavior: 'smooth' });
+    }
+  });
+})();
+</script>
+</body>
+</html>
