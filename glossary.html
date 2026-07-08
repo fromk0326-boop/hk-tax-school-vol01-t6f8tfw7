@@ -1,0 +1,567 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="robots" content="noindex, nofollow, noarchive">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>用語集｜畠山式AI税理士コミュニティ</title>
+<style>
+  :root{
+    --bg:#f5f7fa;--card:#ffffff;--ink:#1f2d3d;--sub:#5b6b7e;--line:#e6ebf1;
+    --brand:#2864f0;--brand-soft:#eaf0ff;--green:#00a86b;--green-soft:#e6f7f0;
+    --amber:#f5a623;--amber-soft:#fff6e6;--red:#e5484d;--red-soft:#fdeced;
+    --radius:16px;--shadow:0 4px 20px rgba(31,45,61,.06);
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{
+    margin:0;font-family:"Hiragino Kaku Gothic ProN","Yu Gothic UI","Meiryo",system-ui,sans-serif;
+    background:var(--bg);color:var(--ink);line-height:1.8;
+  }
+  a{color:var(--brand);text-decoration:none}
+  a:hover{text-decoration:underline}
+  .wrap{max-width:860px;margin:0 auto;padding:40px 20px 80px}
+  .back{display:inline-flex;align-items:center;gap:6px;font-size:13.5px;font-weight:700;margin-bottom:24px}
+  .badge{display:inline-block;background:var(--brand-soft);color:var(--brand);font-weight:800;font-size:13px;padding:6px 14px;border-radius:99px;margin-bottom:16px}
+  h1{font-size:28px;margin:0 0 10px}
+  p.lead{color:var(--sub);font-size:15px;margin:0 0 24px}
+
+  .search-box{
+    position:sticky;top:0;z-index:10;
+    background:rgba(245,247,250,.95);backdrop-filter:blur(8px);
+    padding:12px 0;margin-bottom:8px;
+  }
+  .search-box input{
+    width:100%;border:1px solid var(--line);border-radius:99px;
+    padding:12px 20px;font-size:15px;font-family:inherit;color:var(--ink);
+    background:var(--card);box-shadow:var(--shadow);outline:none;
+  }
+  .search-box input:focus{border-color:var(--brand)}
+  .search-hit{font-size:12.5px;color:var(--sub);font-weight:700;margin-top:6px;padding-left:8px}
+
+  .cat-nav{display:flex;gap:8px;flex-wrap:wrap;margin:14px 0 8px}
+  .cat-pill{
+    font-size:13px;font-weight:700;padding:6px 14px;border-radius:99px;
+    border:1px solid var(--line);background:var(--card);color:var(--ink);white-space:nowrap;
+  }
+  .cat-pill:hover{background:var(--brand-soft);text-decoration:none}
+
+  h2.cat{
+    font-size:19px;margin:36px 0 4px;display:flex;align-items:center;gap:8px;
+    scroll-margin-top:90px;
+  }
+  p.cat-lead{font-size:13.5px;color:var(--sub);margin:0 0 14px}
+
+  .term{
+    background:var(--card);border:1px solid var(--line);border-radius:var(--radius);
+    box-shadow:var(--shadow);padding:18px 22px;margin:12px 0;
+  }
+  .term-head{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;margin-bottom:6px}
+  .term-name{font-size:17px;font-weight:800}
+  .term-read{font-size:12.5px;color:var(--sub);font-weight:700}
+  .term-body{font-size:14.5px;margin:0}
+  .term-eg{
+    font-size:13.5px;color:var(--sub);background:var(--bg);
+    border-left:3px solid var(--brand);border-radius:10px;
+    padding:8px 12px;margin-top:10px;
+  }
+  .term-eg b{color:var(--brand)}
+  .term.hide{display:none}
+
+  /* 出自バッジ（この言葉はどの世界のことばか） */
+  .origin{font-size:11px;font-weight:800;padding:2px 10px;border-radius:99px;white-space:nowrap;margin-left:auto}
+  .o-gen{background:#eef2f6;color:#5b6b7e;border:1px solid var(--line)}
+  .o-ai{background:var(--amber-soft);color:#a86c00}
+  .o-cc{background:var(--brand-soft);color:var(--brand)}
+  .legend{
+    background:var(--card);border:1px solid var(--line);border-radius:var(--radius);
+    padding:16px 20px;margin:0 0 8px;font-size:13.5px;box-shadow:var(--shadow);
+  }
+  .legend h3{margin:0 0 8px;font-size:14.5px}
+  .legend-row{display:flex;gap:10px;align-items:baseline;margin:7px 0}
+  .legend-row .origin{margin-left:0;flex:none}
+  .legend-note{font-size:12.5px;color:var(--sub);margin-top:10px}
+  .origin-filter{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:12px}
+  .of-label{font-size:12px;font-weight:800;color:var(--sub)}
+  .of-btn{
+    cursor:pointer;border:1px solid var(--line);background:var(--bg);border-radius:99px;
+    padding:5px 14px;font-size:12.5px;font-weight:700;font-family:inherit;color:var(--ink);
+  }
+  .of-btn:hover{background:var(--brand-soft)}
+  .of-btn.active{background:var(--ink);color:#fff;border-color:var(--ink)}
+  h2.cat.hide,p.cat-lead.hide{display:none}
+
+  .ask-hana{
+    background:linear-gradient(135deg,#eaf0ff,#e6f7f0);
+    border:1px solid var(--line);border-radius:var(--radius);
+    padding:18px 22px;margin:28px 0;font-size:14.5px;box-shadow:var(--shadow);
+  }
+  .ask-hana b{color:var(--brand)}
+  .empty{text-align:center;color:var(--sub);font-size:14px;padding:48px 0}
+  code{background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:1px 6px;font-size:13px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <a class="back" href="index.html">← 課題ページに戻る</a>
+  <span class="badge">畠山式AI税理士コミュニティ</span>
+  <h1>📖 用語集</h1>
+  <p class="lead">講座に出てくる「横文字」を、税理士・士業の方向けに噛み砕いて説明したページです。分からない言葉が出てきたら、まずここを検索してみてください。</p>
+
+  <div class="ask-hana">
+    💡 <b>ここに載っていない言葉が出てきたら？</b><br>
+    Claude Codeのチャットに「<b>◯◯って何？　IT用語が苦手な税理士に分かるように説明して</b>」と聞けばOKです。それ自体がAIとの付き合い方の練習になります🌸
+  </div>
+
+  <div class="legend">
+    <h3>🏷 バッジの見方：それは「どの世界のことば」？</h3>
+    <div class="legend-row"><span class="origin o-gen">🌍 IT一般</span><span>ソフトウェアの世界で昔から使われている共通語。<b>一度覚えれば、Claude以外のツールでもずっと通じます</b>。実はこのページの大半（57語中43語）がこれです。</span></div>
+    <div class="legend-row"><span class="origin o-ai">🧠 生成AI共通</span><span>ChatGPTなど、他の生成AIでも同じ意味で通じることば（6語）。</span></div>
+    <div class="legend-row"><span class="origin o-cc">💠 Claude特有</span><span>Claude／Claude Codeだけのことば。他のツールでは通じません。<b>この8語だけがClaude専用の暗記対象</b>です。</span></div>
+    <div class="legend-note">つまり「横文字が多くて大変」に見えて、Claude専用に覚えることはごく一部。ほとんどはIT業界の共通語なので、覚えた分だけ他のツールでも財産になります。</div>
+    <div class="origin-filter">
+      <span class="of-label">絞り込み：</span>
+      <button class="of-btn active" data-origin="all" onclick="setOrigin(this)">すべて</button>
+      <button class="of-btn" data-origin="gen" onclick="setOrigin(this)">🌍 IT一般</button>
+      <button class="of-btn" data-origin="ai" onclick="setOrigin(this)">🧠 生成AI共通</button>
+      <button class="of-btn" data-origin="cc" onclick="setOrigin(this)">💠 Claude特有</button>
+    </div>
+  </div>
+
+  <div class="search-box">
+    <input type="text" id="q" placeholder="🔍 用語を検索（例：マークダウン、MCP、トークン）" oninput="filterTerms()">
+    <div class="search-hit" id="hit"></div>
+  </div>
+
+  <div class="cat-nav">
+    <a class="cat-pill" href="#cat1">🔤 基本のことば</a>
+    <a class="cat-pill" href="#cat2">📄 ファイルまわり</a>
+    <a class="cat-pill" href="#cat3">💻 Claude Codeのことば</a>
+    <a class="cat-pill" href="#cat7">🧰 テンプレート導入のことば</a>
+    <a class="cat-pill" href="#cat4">🔌 つなぐ・連携のことば</a>
+    <a class="cat-pill" href="#cat5">🛠 開発ツールのことば</a>
+    <a class="cat-pill" href="#cat6">💳 料金・プランのことば</a>
+  </div>
+
+  <div id="terms">
+
+    <!-- ===== 基本のことば ===== -->
+    <h2 class="cat" id="cat1">🔤 基本のことば</h2>
+    <p class="cat-lead">まずはここから。会話の土台になる言葉です。</p>
+
+    <div class="term">
+      <div class="term-head"><span class="term-name">生成AI</span><span class="term-read">せいせいエーアイ</span></div>
+      <p class="term-body">文章・画像・プログラムなどを「作り出せる」人工知能のこと。ChatGPTやClaudeが代表例です。決まった答えを返す従来のソフトと違い、指示に応じて中身を毎回組み立てます。</p>
+    </div>
+
+    <div class="term">
+      <div class="term-head"><span class="term-name">Claude</span><span class="term-read">クロード</span></div>
+      <p class="term-body">Anthropic（アンソロピック）社が作っている生成AIの名前。ChatGPTの同業他社にあたります。この講座で使うのはこのClaudeです。</p>
+    </div>
+
+    <div class="term">
+      <div class="term-head"><span class="term-name">Claude Code</span><span class="term-read">クロードコード</span></div>
+      <p class="term-body">Claudeに「会話」だけでなく「PC上の作業」まで任せられるデスクトップアプリ。ファイルを作る・freeeに起票する・資料を読むといった実作業を、チャットで頼むだけで実行してくれます。</p>
+      <div class="term-eg"><b>たとえるなら</b>：ChatGPTが「電話相談できる相手」なら、Claude Codeは「事務所に来て手を動かしてくれるスタッフ」です。</div>
+    </div>
+
+    <div class="term">
+      <div class="term-head"><span class="term-name">プロンプト</span><span class="term-read">prompt</span></div>
+      <p class="term-body">AIへの指示文のこと。「この請求書をfreeeに登録して」もプロンプトです。特別な書き方は不要で、スタッフへの依頼メモと同じ感覚で書けば伝わります。</p>
+    </div>
+
+    <div class="term">
+      <div class="term-head"><span class="term-name">チャット</span><span class="term-read">chat</span></div>
+      <p class="term-body">AIとやり取りする会話画面のこと。LINEのトーク画面のイメージです。課題ページの「チャットに貼り付けて送信」は、この画面の入力欄に文章を貼ることを指します。</p>
+    </div>
+
+    <div class="term">
+      <div class="term-head"><span class="term-name">コピペ</span><span class="term-read">コピー＆ペースト</span></div>
+      <p class="term-body">文章をコピーして貼り付けること。Windowsは Ctrl+C（コピー）→ Ctrl+V（貼り付け）、Macは Command+C → Command+V。課題ページの「コピー」ボタンを押せば自動でコピーされます。</p>
+    </div>
+
+    <!-- ===== ファイルまわり ===== -->
+    <h2 class="cat" id="cat2">📄 ファイルまわり</h2>
+    <p class="cat-lead">「作ってもらった資料がどこにあるか分からない」を防ぐ言葉たち。</p>
+
+    <div class="term">
+      <div class="term-head"><span class="term-name">マークダウン（.md）</span><span class="term-read">Markdown・エムディーファイル</span></div>
+      <p class="term-body">見出しや箇条書きを簡単な記号で表す「メモの書き方のルール」、およびその形式で書かれたファイル（拡張子 .md）のこと。<code>#</code> が見出し、<code>-</code> が箇条書きを意味します。Claude Codeが議事録やメモを作るときの標準形式で、Wordは不要。<b>Claude Codeアプリの中でそのまま読めます</b>。</p>
+      <div class="term-eg"><b>たとえるなら</b>：Wordのような「アプリ」ではなく、「速記のルール」に近いもの。ルールさえ知っていればどのPCでも読み書きできます。</div>
+      <div class="term-eg"><b>背景</b>：2004年生まれの書き方で、エンジニアの世界では20年来の共通語。AIが読み書きしやすい形式のため、生成AIの普及とともに一般にも広がりました。</div>
+    </div>
+
+    <div class="term">
+      <div class="term-head"><span class="term-name">拡張子</span><span class="term-read">かくちょうし</span></div>
+      <p class="term-body">ファイル名の末尾につく「.pdf」「.xlsx」「.md」などのこと。ファイルの種類（何のアプリで開くものか）を表します。</p>
+    </div>
+
+    <div class="term">
+      <div class="term-head"><span class="term-name">フォルダ／ディレクトリ</span><span class="term-read">folder / directory</span></div>
+      <p class="term-body">ファイルの入れ物のこと。「ディレクトリ」は同じ意味のIT用語です。Claude Codeでは「どのフォルダを開いて作業するか」が大事で、メモリなどの設定はフォルダごとに保存されます。</p>
+    </div>
+
+    <div class="term">
+      <div class="term-head"><span class="term-name">ZIP／解凍</span><span class="term-read">ジップ／かいとう</span></div>
+      <p class="term-body">複数のファイルを1つにまとめて圧縮したファイルがZIP。中身を取り出すことを「解凍（展開）」と言います。配布テンプレートをダウンロードすると、この形式のことがあります。</p>
+    </div>
+
+    <div class="term">
+      <div class="term-head"><span class="term-name">CSV</span><span class="term-read">シーエスブイ</span></div>
+      <p class="term-body">データをカンマ（,）で区切っただけのシンプルな表形式ファイル。Excelで開けます。freeeやMF会計への明細取込・一括登録でよく使われます。</p>
+    </div>
+
+    <!-- ===== Claude Codeのことば ===== -->
+    <h2 class="cat" id="cat3">💻 Claude Codeのことば</h2>
+    <p class="cat-lead">アプリの設定・カスタマイズで出てくる言葉たち。テンプレート導入時にも登場します。</p>
+
+    <div class="term">
+      <div class="term-head"><span class="term-name">インストール</span><span class="term-read">install</span></div>
+      <p class="term-body">アプリやソフトを自分のPCに入れて使えるようにすること。逆に消すことは「アンインストール」と言います。</p>
+    </div>
+
+    <div class="term">
+      <div class="term-head"><span class="term-name">ターミナル（黒い画面）</span><span class="term-read">terminal</span></div>
+      <p class="term-body">文字だけでPCを操作する画面。エンジニアがよく使うものですが、<b>この講座ではターミナルは使いません</b>。Claude Codeデスクトップアプリのチャットだけで完結します。</p>
+    </div>
+
+    <div class="term">
+      <div class="term-head"><span class="term-name">コマンド</span><span class="term-read">command</span></div>
+      <p class="term-body">PCへの命令文のこと。「このコマンドを実行してもよいですか？」と聞かれたら、Claudeが命令文を代わりに実行しようとしている場面です。内容を読んで許可すればOK。自分で打ち込む必要はありません。</p>
+    </div>
+
+    <div class="term">
+      <div class="term-head"><span class="term-name">プラグイン</span><span class="term-read">plugin</span></div>
+      <p class="term-body">アプリに後づけできる拡張機能のこと。第1回で入れる「freee MCPプラグイン」は、Claude Codeに「freeeを操作する機能」を後づけするものです。</p>
+      <div class="term-eg"><b>たとえるなら</b>：スマホに入れる「追加アプリ」のようなもの。本体はそのままに、できることが増えます。</div>
+    </div>
+
+    <div class="term">
+      <div class="term-head"><span class="term-name">CLAUDE.md</span><span class="term-read">クロード・エムディー</span></div>
+      <p class="term-body">Claude Codeが会話の最初に毎回読み込む「事務所ルールブック」のファイル。AIの名前・性格、やってよいこと・ダメなことをここに書いておくと、毎回言わなくても守ってくれます。テンプレート①で設定するものです。</p>
+      <div class="term-eg"><b>背景</b>：ファイル名はClaude専用ですが、「AIへの指示書をフォルダに置いておく」というやり方自体は、他のAIツールにも広がりつつある文化です。</div>
+    </div>
+
+    <div class="term">
+      <div class="term-head"><span class="term-name">メモリ</span><span class="term-read">memory</span></div>
+      <p class="term-body">Claude Codeの「記憶帳」。会話をまたいで覚えておいてほしいこと（好み・ルール・顧問先情報など）をファイルとして保存する仕組みです。「前にも言いましたよね」が通じるようになります。テンプレート③で設定します。</p>
+      <div class="term-eg"><b>背景</b>：ChatGPTにも「メモリ」という同名の機能があります。「AIに長期記憶を持たせる」考え方は生成AI共通で、実現のしかたがツールごとに違うだけです。</div>
+    </div>
+
+    <div class="term">
+      <div class="term-head"><span class="term-name">hooks（フック）</span><span class="term-read">フックス</span></div>
+      <p class="term-body">「◯◯のタイミングで、自動で△△する」という仕掛けのこと。たとえば「会話が長くなって要約された後も、前提ルールを読み直させる」といった自動化に使います。テンプレート④で設定します。</p>
+      <div class="term-eg"><b>たとえるなら</b>：「来客があったらお茶を出す」のような、条件つきの自動ルールです。</div>
+      <div class="term-eg"><b>背景</b>：「フック（引っかけて割り込む仕組み）」はプログラミングの世界の古くからの一般用語。Claude専用語ではなく、他のソフトの説明にも出てきます。</div>
+    </div>
+
+    <div class="term">
+      <div class="term-head"><span class="term-name">settings.json</span><span class="term-read">セッティングス・ジェイソン</span></div>
+      <p class="term-body">Claude Codeの動作設定が書かれたファイル。テンプレートの「セキュリティ」「Hooks」で編集します。壊れると動作に影響するので、<b>変更前に必ずバックアップを作る</b>のがお約束です。</p>
+      <div class="term-eg"><b>背景</b>：「設定をJSONファイルに書く」やり方自体はIT一般の文化。settings.jsonというファイル名と、中に書ける項目のルールがClaude Code固有です。</div>
+    </div>
+
+    <div class="term">
+      <div class="term-head"><span class="term-name">スラッシュコマンド（/◯◯）</span><span class="term-read">slash command</span></div>
+      <p class="term-body">「/」で始まる、Claude Code専用の短縮命令。ただし「/plugin ...」のような断片だけをチャットに貼っても動きません。課題ページのコピペ文を<b>まるごと</b>貼って、Claudeにお願いする形が確実です。</p>
+      <div class="term-eg"><b>背景</b>：「/」で命令する文化はSlackやDiscordなどのチャットツール共通。ただし使えるコマンドの中身はツールごとに違います。</div>
+    </div>
+
+    <div class="term">
+      <div class="term-head"><span class="term-name">再起動</span><span class="term-read">さいきどう</span></div>
+      <p class="term-body">アプリやPCを一度完全に終了して、開き直すこと。設定やプラグインは<b>開き直したときに読み込まれる</b>ため、「入れたのに反応しない」の大半は再起動で直ります。タスクトレイ（画面右下）やDockに残っていないかも確認を。</p>
+    </div>
+
+    <!-- ===== テンプレート導入のことば ===== -->
+    <h2 class="cat" id="cat7">🧰 テンプレート導入のことば</h2>
+    <p class="cat-lead">配布している「AI事務所テンプレート一式」のセットアップで出てくる言葉たち。READMEやClaudeの報告に出てきたら、ここで確認してください。</p>
+
+    <div class="term">
+      <div class="term-head"><span class="term-name">README</span><span class="term-read">リードミー</span></div>
+      <p class="term-body">「最初に読んでください（Read me）」という名前の説明書ファイル。フォルダを受け取ったら、まずREADMEを探して読む（またはClaudeに「READMEを読んで進めて」と頼む）のがITの世界のお約束です。</p>
+    </div>
+
+    <div class="term">
+      <div class="term-head"><span class="term-name">テキストファイル（.txt）</span><span class="term-read">テキスト</span></div>
+      <p class="term-body">飾りのない「文字だけ」のファイル。メモ帳で開ける、いちばん基本の形式です。注意点がひとつ：拡張子が非表示の設定のままファイル名を変えると、知らないうちに「◯◯.md<b>.txt</b>」という二重拡張子になって読み込まれない事故が起きがちです。エクスプローラー／Finderで拡張子表示をONにしておくと安心です。</p>
+    </div>
+
+    <div class="term">
+      <div class="term-head"><span class="term-name">シェルスクリプト（.sh）</span><span class="term-read">エスエイチファイル</span></div>
+      <p class="term-body">PCへの命令をまとめて書いた「台本」ファイル。テンプレートのセキュリティガードやhooksの実体（credential-guard.sh、session-start.sh など）がこれです。<b>中身を読めるようになる必要はありません</b>。「このスクリプトは何をするの？」とClaudeに聞けば日本語で説明してくれます。</p>
+      <div class="term-eg"><b>たとえるなら</b>：新人さんに渡す「この順番でやってね」という作業手順書。実行するのはPCです。</div>
+    </div>
+
+    <div class="term">
+      <div class="term-head"><span class="term-name">JSON</span><span class="term-read">ジェイソン（.json）</span></div>
+      <p class="term-body">プログラム用のデータの書き方のルール。settings.json の中身がこの形式です。カンマやカッコが1つ欠けるだけでエラーになる繊細な形式ですが、手で直す必要はなく、<b>エラーメッセージごとClaudeに貼れば直してくれます</b>。</p>
+      <div class="term-eg"><b>背景</b>：名前はJavaScriptというプログラミング言語に由来。いまでは言語を問わず、IT業界全体の共通データ形式になっています。</div>
+    </div>
+
+    <div class="term">
+      <div class="term-head"><span class="term-name">.claude フォルダ</span><span class="term-read">ドットクロード</span></div>
+      <p class="term-body">Claude Codeの設定一式（settings.json・hooks・メモリなど）が入る専用フォルダ。テンプレート①〜④の設置先はここです。名前が「.」で始まるため、ふだんは隠れています（次の「隠しファイル」参照）。</p>
+    </div>
+
+    <div class="term">
+      <div class="term-head"><span class="term-name">隠しファイル／隠しフォルダ</span><span class="term-read">かくしファイル</span></div>
+      <p class="term-body">名前が「.」で始まるファイルやフォルダ（.claude、.env など）は、初期設定では画面に表示されません。「見つからない！」となったら、エクスプローラー／Finderの「隠しファイルを表示」をONにしてください。</p>
+    </div>
+
+    <div class="term">
+      <div class="term-head"><span class="term-name">.env</span><span class="term-read">ドットエンブ</span></div>
+      <p class="term-body">パスワードやAPIキーなどの秘密情報をまとめて書いておくファイル。<b>絶対に人に見せない・AIにも不用意に読ませないのが鉄則</b>で、テンプレート②のセキュリティロックは「.envの誤読み取り・外部送信」を防ぐためのものです。</p>
+      <div class="term-eg"><b>たとえるなら</b>：事務所の金庫の鍵束。だからこそ、うっかり触らせないロックを最初にかけます。</div>
+      <div class="term-eg"><b>背景</b>：Web開発の世界で広く使われてきた慣習的なファイル名。「秘密情報は.envに隔離して、共有物に含めない」が業界の常識になっています。</div>
+    </div>
+
+    <div class="term">
+      <div class="term-head"><span class="term-name">パス（フルパス）</span><span class="term-read">path</span></div>
+      <p class="term-body">ファイルやフォルダの「住所」。<code>C:\Users\hatakeyama\Documents\◯◯.md</code> のような文字列です。「フルパスを教えて」と言われたら、この住所全体のこと。ClaudeにファイルのありかをQ&Aするときによく登場します。</p>
+    </div>
+
+    <div class="term">
+      <div class="term-head"><span class="term-name">Git Bash／bash</span><span class="term-read">ギットバッシュ／バッシュ</span></div>
+      <p class="term-body">bash（バッシュ）は .sh ファイルを動かす「実行係」。Macには標準で入っていますが、Windowsには無いため、Gitをインストールすると付いてくる「Git Bash」で代用します。テンプレート②と④が裏側で使うので、Windowsの方は先にGitを入れておきます。</p>
+    </div>
+
+    <div class="term">
+      <div class="term-head"><span class="term-name">permissions（allow / ask / deny）</span><span class="term-read">パーミッションズ</span></div>
+      <p class="term-body">Claude Codeに対する「やってよい（allow）・毎回確認（ask）・禁止（deny）」の権限リスト。settings.json の中に書きます。テンプレート②は、危険な操作をこのdenyとaskに登録することで事故を防いでいます。</p>
+      <div class="term-eg"><b>たとえるなら</b>：新人スタッフへの職務権限規程。「押印は所長決裁」「シュレッダーは確認してから」を明文化するイメージです。</div>
+      <div class="term-eg"><b>背景</b>：「権限（パーミッション）」という考え方自体はセキュリティ業界の一般用語。allow / ask / deny の3段階で書く方式がClaude Code固有です。</div>
+    </div>
+
+    <div class="term">
+      <div class="term-head"><span class="term-name">rm -rf</span><span class="term-read">アールエム・マイナスアールエフ</span></div>
+      <p class="term-body">フォルダを中身ごと、<b>確認なしで完全削除する</b>命令。ゴミ箱にも残りません。テンプレート②のロックが真っ先に防ぐ対象で、「rm -rf事故」と言ったらAIやスクリプトの誤操作による大量削除のことです。</p>
+      <div class="term-eg"><b>背景</b>：Macの土台にもなっているUnixという歴史あるOSから続く伝統的なコマンド。IT業界では「危険な命令」の代名詞として有名です。</div>
+    </div>
+
+    <div class="term">
+      <div class="term-head"><span class="term-name">実行権限（chmod +x）</span><span class="term-read">じっこうけんげん</span></div>
+      <p class="term-body">「このファイルは実行してOK」という印。.sh ファイルはこの印が無いと動かず、「permission denied」というエラーになります。hooksが反応しないときの定番チェックポイント。Claudeに「実行権限を確認して直して」と頼めばOKです。</p>
+    </div>
+
+    <div class="term">
+      <div class="term-head"><span class="term-name">改行コード（CRLF / LF）</span><span class="term-read">かいぎょうコード</span></div>
+      <p class="term-body">「改行」の内部的な表し方が、Windows（CRLF）とMac（LF）で違います。ZIPやドライブ経由で受け取った .sh ファイルが動かないときの定番原因。見た目では分からないので、Claudeに「改行コードを確認して、CRLFならLFに直して」と頼むのが早道です。</p>
+    </div>
+
+    <div class="term">
+      <div class="term-head"><span class="term-name">バックアップ（.bak）</span><span class="term-read">backup／ドットバック</span></div>
+      <p class="term-body">変更前のファイルのコピー。ファイル名の末尾に「.bak」や日付（settings.json.bak_20260709 など）を付けて残します。設定をいじって壊れても、バックアップを元のファイル名に戻せば復旧できます。<b>settings.json を変更する前は必ず作る</b>のがテンプレートのルールです。</p>
+    </div>
+
+    <div class="term">
+      <div class="term-head"><span class="term-name">.gitignore</span><span class="term-read">ギットイグノア</span></div>
+      <p class="term-body">「Gitの管理（履歴・共有）に<b>入れないファイル</b>」を並べたリスト。.env などの秘密情報を、うっかり履歴や共有に含めないための安全装置です。テンプレート②にひな形が入っています。</p>
+    </div>
+
+    <div class="term">
+      <div class="term-head"><span class="term-name">セッション</span><span class="term-read">session</span></div>
+      <p class="term-body">Claude Codeとの「1回の会話のまとまり」。新しいチャットを開始してから閉じるまでが1セッションです。「セッションを跨いで覚える」＝会話を新しくしても覚えている、という意味で、それを実現するのがテンプレート③のメモリです。</p>
+    </div>
+
+    <div class="term">
+      <div class="term-head"><span class="term-name">コンテキスト</span><span class="term-read">context</span></div>
+      <p class="term-body">AIが「いま頭に入れている文脈情報」のこと。会話の履歴や読んだファイルの中身がこれにあたります。コンテキストには容量の上限があるため、長い会話では古い内容が押し出されて「前提を忘れる」現象が起きます。</p>
+      <div class="term-eg"><b>たとえるなら</b>：打ち合わせ中の「短期記憶」。メモ（メモリ）に書かない限り、会議が終われば忘れます。</div>
+    </div>
+
+    <div class="term">
+      <div class="term-head"><span class="term-name">圧縮（/compact・コンパクト）</span><span class="term-read">あっしゅく</span></div>
+      <p class="term-body">会話が長くなったとき、履歴を要約してコンテキストの空きを作るClaude Codeの機能。便利な反面、要約の過程で大事なルールが抜け落ちることがあります。それを自動で読み直させるのがテンプレート④のhooks（post-compact）です。</p>
+    </div>
+
+    <!-- ===== つなぐ・連携のことば ===== -->
+    <h2 class="cat" id="cat4">🔌 つなぐ・連携のことば</h2>
+    <p class="cat-lead">freeeとClaude Codeをつなぐときに出てくる言葉たち。第1回のメインどころです。</p>
+
+    <div class="term">
+      <div class="term-head"><span class="term-name">MCP</span><span class="term-read">エムシーピー（Model Context Protocol）</span></div>
+      <p class="term-body">AIと外部サービス（freeeなど）をつなぐための「共通プラグ」の規格。これを挿すと、Claude Codeが「freeeを操作する手」を手に入れます。第1回で入れるfreee MCPは、freee公式が無料公開している正規のものです。</p>
+      <div class="term-eg"><b>たとえるなら</b>：家電のコンセントの規格。プラグの形が共通だから、どのメーカーの家電（サービス）でも同じ差込口（AI）につながります。</div>
+      <div class="term-eg"><b>背景</b>：もともとはClaudeの開発元Anthropic社が2024年に公開した規格。その後ChatGPTなど他社のAIも採用し、いまではAI業界の共通規格になっています。</div>
+    </div>
+
+    <div class="term">
+      <div class="term-head"><span class="term-name">API</span><span class="term-read">エーピーアイ</span></div>
+      <p class="term-body">ソフト同士がやり取りするための「プログラム専用の窓口」。人間はfreeeの画面をマウスで操作しますが、プログラムはAPIという裏口から直接データを読み書きします。画面操作より速くて確実です。</p>
+      <div class="term-eg"><b>たとえるなら</b>：銀行の「窓口」が人間用、「全銀システム」がプログラム用。APIは後者にあたります。</div>
+    </div>
+
+    <div class="term">
+      <div class="term-head"><span class="term-name">APIキー／トークン</span><span class="term-read">エーピーアイキー／token</span></div>
+      <p class="term-body">APIを使うための「合鍵」にあたる長い文字列。<b>これを知っている人は誰でもあなたの代わりに操作できてしまう</b>ので、スクリーンショットに写さない・チャットや掲示板に貼らない・人に教えない、が鉄則です。</p>
+    </div>
+
+    <div class="term">
+      <div class="term-head"><span class="term-name">認証／認可（許可する）</span><span class="term-read">にんしょう／にんか</span></div>
+      <p class="term-body">「このアプリに、私の代わりにfreeeを操作することを許可します」という手続き。第1回でブラウザが開いて「許可する」を押すのがこれです。許可の範囲は、ログインしているfreeeユーザーの権限と同じ範囲に限定されます。</p>
+    </div>
+
+    <div class="term">
+      <div class="term-head"><span class="term-name">連携／同期</span><span class="term-read">れんけい／どうき</span></div>
+      <p class="term-body">サービス同士をつないで、データが自動で流れる状態にすること。「口座連携」なら、銀行の入出金明細が自動でfreeeに届くようになります。「同期」は最新の状態に揃えることです。</p>
+    </div>
+
+    <div class="term">
+      <div class="term-head"><span class="term-name">クラウド</span><span class="term-read">cloud</span></div>
+      <p class="term-body">データやソフトが自分のPCではなく、インターネット上のサーバーにある状態のこと。freeeが「クラウド会計」と呼ばれるのは、どのPCからログインしても同じデータが使えるからです。</p>
+    </div>
+
+    <div class="term">
+      <div class="term-head"><span class="term-name">ローカル</span><span class="term-read">local</span></div>
+      <p class="term-body">クラウドの反対で、「自分のPCの中」のこと。「ローカルに保存」と言われたら、自分のPCの中に保存するという意味です。</p>
+    </div>
+
+    <div class="term">
+      <div class="term-head"><span class="term-name">ブラウザ</span><span class="term-read">browser</span></div>
+      <p class="term-body">インターネットのページを見るためのアプリ。Chrome、Edge、Safariなどのことです。freeeはブラウザで開くサービスです。</p>
+    </div>
+
+    <!-- ===== 開発ツールのことば ===== -->
+    <h2 class="cat" id="cat5">🛠 開発ツールのことば</h2>
+    <p class="cat-lead">画面の案内やエラーで出てきたときに「ああ、あれね」と思い出せればOKの言葉たち。使いこなす必要はありません。</p>
+
+    <div class="term">
+      <div class="term-head"><span class="term-name">Git</span><span class="term-read">ギット</span></div>
+      <p class="term-body">ファイルの変更履歴を管理する道具。エンジニアの必需品ですが、この講座では「プラグインの取得などの<b>裏方として必要になることがある</b>」程度の関わりです。「gitが見つかりません」と言われたら、案内に沿って入れるだけでOK。</p>
+    </div>
+
+    <div class="term">
+      <div class="term-head"><span class="term-name">GitHub</span><span class="term-read">ギットハブ</span></div>
+      <p class="term-body">Gitで管理しているファイルを置いておける、インターネット上の倉庫サービス。freee MCPプラグインなどの配布元としても使われています。</p>
+    </div>
+
+    <div class="term">
+      <div class="term-head"><span class="term-name">Python</span><span class="term-read">パイソン</span></div>
+      <p class="term-body">世界で最もよく使われているプログラミング言語のひとつ。第3回の「freeeオート経理（体験版）」はPythonで書かれています。<b>自分で書ける必要はありません</b>。動かすためにPCに入れておく、という位置づけです。</p>
+    </div>
+
+    <div class="term">
+      <div class="term-head"><span class="term-name">GUI</span><span class="term-read">ジーユーアイ</span></div>
+      <p class="term-body">マウスでクリックして操作できる、ふつうの画面のこと。「GUIインストール」は「黒い画面に文字を打つのではなく、画面の案内に沿ってクリックで入れられますよ」という意味です。</p>
+    </div>
+
+    <div class="term">
+      <div class="term-head"><span class="term-name">エラー</span><span class="term-read">error</span></div>
+      <p class="term-body">うまく動かなかったときにPCが出すお知らせ。赤い文字や英語で出ると身構えますが、<b>エラー文をまるごとコピーしてClaudeに貼れば、原因と対処を日本語で説明してくれます</b>。怖がらず素材として扱うのがコツです。</p>
+    </div>
+
+    <div class="term">
+      <div class="term-head"><span class="term-name">OCR</span><span class="term-read">オーシーアール</span></div>
+      <p class="term-body">画像やPDFに写っている文字を読み取ってデータにする技術。第3回の「請求書PDFを読み取ってfreeeに起票」で活躍します。</p>
+    </div>
+
+    <!-- ===== 料金・プランのことば ===== -->
+    <h2 class="cat" id="cat6">💳 料金・プランのことば</h2>
+    <p class="cat-lead">お金まわりで迷わないための言葉たち。</p>
+
+    <div class="term">
+      <div class="term-head"><span class="term-name">Proプラン（課金）</span><span class="term-read">プロプラン</span></div>
+      <p class="term-body">Claudeの月額有料プラン（月額制・約22ドル＝3,300円前後）。<b>Claude Codeは無料プランでは動かない</b>ため、講座ではProプランへの加入が必須です。年額ではなく月額を選べばいつでもやめられます。</p>
+    </div>
+
+    <div class="term">
+      <div class="term-head"><span class="term-name">使用上限（レート制限）</span><span class="term-read">しようじょうげん</span></div>
+      <p class="term-body">有料プランでも、一定時間にたくさん使うと「使用上限に達しました」と一時停止になる仕組み。故障ではありません。<b>時間を置くと自動で復活します</b>。休憩を挟むか、続きは後日でOKです。</p>
+    </div>
+
+    <div class="term">
+      <div class="term-head"><span class="term-name">お試し期間（トライアル）</span><span class="term-read">trial</span></div>
+      <p class="term-body">freeeに新規登録すると使える30日間の無料期間。この間は口座連携もAPI連携も無料で使えます。期間終了後も続ける場合は有料プランの契約が必要で、未契約のままだと連携は自動的に解除されます。</p>
+    </div>
+
+    <div class="term">
+      <div class="term-head"><span class="term-name">サブスクリプション（サブスク）</span><span class="term-read">subscription</span></div>
+      <p class="term-body">月額・年額で継続的に支払う契約形態のこと。ClaudeのProプランも、freeeの有料プランもサブスクです。</p>
+    </div>
+
+  </div>
+
+  <div class="empty" id="noHit" style="display:none">
+    見つかりませんでした。Claude Codeに「◯◯って何？」と聞いてみてください🌸<br>
+    「この言葉も用語集に載せてほしい」というリクエストは、課題ページの恩送りメモへどうぞ。
+  </div>
+
+</div>
+
+<script>
+  // ===== 出自バッジ（この言葉はどの世界のことばか） =====
+  const ORIGIN_TYPES = {
+    gen:{cls:'o-gen', label:'🌍 IT一般'},
+    ai :{cls:'o-ai',  label:'🧠 生成AI共通'},
+    cc :{cls:'o-cc',  label:'💠 Claude特有'}
+  };
+  const ORIGIN_MAP = {
+    // 基本のことば
+    '生成AI':'ai','Claude':'cc','Claude Code':'cc','プロンプト':'ai','チャット':'gen','コピペ':'gen',
+    // ファイルまわり
+    'マークダウン（.md）':'gen','拡張子':'gen','フォルダ／ディレクトリ':'gen','ZIP／解凍':'gen','CSV':'gen',
+    // Claude Codeのことば
+    'インストール':'gen','ターミナル（黒い画面）':'gen','コマンド':'gen','プラグイン':'gen',
+    'CLAUDE.md':'cc','メモリ':'ai','hooks（フック）':'gen','settings.json':'cc',
+    'スラッシュコマンド（/◯◯）':'gen','再起動':'gen',
+    // テンプレート導入のことば
+    'README':'gen','テキストファイル（.txt）':'gen','シェルスクリプト（.sh）':'gen','JSON':'gen',
+    '.claude フォルダ':'cc','隠しファイル／隠しフォルダ':'gen','.env':'gen','パス（フルパス）':'gen',
+    'Git Bash／bash':'gen','permissions（allow / ask / deny）':'cc','rm -rf':'gen',
+    '実行権限（chmod +x）':'gen','改行コード（CRLF / LF）':'gen','バックアップ（.bak）':'gen',
+    '.gitignore':'gen','セッション':'gen','コンテキスト':'ai','圧縮（/compact・コンパクト）':'cc',
+    // つなぐ・連携のことば
+    'MCP':'ai','API':'gen','APIキー／トークン':'gen','認証／認可（許可する）':'gen',
+    '連携／同期':'gen','クラウド':'gen','ローカル':'gen','ブラウザ':'gen',
+    // 開発ツールのことば
+    'Git':'gen','GitHub':'gen','Python':'gen','GUI':'gen','エラー':'gen','OCR':'gen',
+    // 料金・プランのことば
+    'Proプラン（課金）':'cc','使用上限（レート制限）':'ai','お試し期間（トライアル）':'gen','サブスクリプション（サブスク）':'gen'
+  };
+  document.querySelectorAll('.term').forEach(t=>{
+    const name = t.querySelector('.term-name').textContent.trim();
+    const o = ORIGIN_MAP[name];
+    if(!o) return;
+    t.dataset.origin = o;
+    const s = document.createElement('span');
+    s.className = 'origin ' + ORIGIN_TYPES[o].cls;
+    s.textContent = ORIGIN_TYPES[o].label;
+    t.querySelector('.term-head').appendChild(s);
+  });
+
+  let activeOrigin = 'all';
+  function setOrigin(btn){
+    activeOrigin = btn.dataset.origin;
+    document.querySelectorAll('.of-btn').forEach(b=>b.classList.toggle('active', b===btn));
+    filterTerms();
+  }
+
+  function filterTerms(){
+    const q = document.getElementById('q').value.trim().toLowerCase();
+    const terms = document.querySelectorAll('.term');
+    let hit = 0;
+    terms.forEach(t=>{
+      const text = t.textContent.toLowerCase();
+      const show = (!q || text.includes(q)) && (activeOrigin==='all' || t.dataset.origin===activeOrigin);
+      t.classList.toggle('hide', !show);
+      if(show) hit++;
+    });
+    // カテゴリ見出しは、配下に表示中の用語が1つもなければ隠す
+    document.querySelectorAll('h2.cat').forEach(h=>{
+      let el = h.nextElementSibling, any = false;
+      while(el && !el.classList.contains('cat')){
+        if(el.classList.contains('term') && !el.classList.contains('hide')) any = true;
+        el = el.nextElementSibling;
+      }
+      h.classList.toggle('hide', !any);
+      if(h.nextElementSibling && h.nextElementSibling.tagName==='P'){
+        h.nextElementSibling.classList.toggle('hide', !any);
+      }
+    });
+    const filtering = q || activeOrigin !== 'all';
+    document.getElementById('hit').textContent = filtering ? hit + '件ヒット' : '';
+    document.getElementById('noHit').style.display = (filtering && hit===0) ? 'block' : 'none';
+  }
+</script>
+</body>
+</html>
