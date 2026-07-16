@@ -1,0 +1,1054 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="robots" content="noindex, nofollow, noarchive">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI税理士ブートキャンプ｜第3回 未処理明細の登録×OCR起票 勘定科目ルールを育てる</title>
+<style>
+  :root{
+    --bg:#f5f7fa;
+    --card:#ffffff;
+    --ink:#1f2d3d;
+    --sub:#5b6b7e;
+    --line:#e6ebf1;
+    --brand:#2864f0;
+    --brand-soft:#eaf0ff;
+    --green:#00a86b;
+    --green-soft:#e6f7f0;
+    --amber:#f5a623;
+    --amber-soft:#fff6e6;
+    --red:#e5484d;
+    --red-soft:#fdeced;
+    --radius:16px;
+    --shadow:0 4px 20px rgba(31,45,61,.06);
+    --shadow-lg:0 10px 40px rgba(31,45,61,.10);
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{
+    margin:0;
+    font-family:"Hiragino Kaku Gothic ProN","Yu Gothic UI","Meiryo",system-ui,sans-serif;
+    background:var(--bg);
+    color:var(--ink);
+    line-height:1.8;
+    -webkit-font-smoothing:antialiased;
+  }
+  a{color:var(--brand);text-decoration:none}
+  a:hover{text-decoration:underline}
+
+  /* ===== 進捗バー（上部固定） ===== */
+  .progress-bar{
+    position:sticky;top:0;z-index:50;
+    background:rgba(255,255,255,.92);
+    backdrop-filter:blur(10px);
+    border-bottom:1px solid var(--line);
+    padding:10px 20px;
+    display:flex;align-items:center;gap:14px;
+    flex-wrap:wrap;
+  }
+  .progress-bar .logo{font-weight:800;font-size:15px;letter-spacing:.02em}
+  .progress-bar .logo span{color:var(--brand)}
+  .progress-track{
+    flex:1;min-width:160px;height:10px;border-radius:99px;
+    background:var(--line);overflow:hidden;
+  }
+  .progress-fill{
+    height:100%;width:0%;border-radius:99px;
+    background:linear-gradient(90deg,var(--brand),var(--green));
+    transition:width .5s cubic-bezier(.2,.8,.2,1);
+  }
+  .progress-count{font-weight:800;font-size:14px;white-space:nowrap}
+  .progress-count b{color:var(--brand);font-size:18px}
+
+  /* ===== レイアウト ===== */
+  .wrap{max-width:1080px;margin:0 auto;padding:0 20px;
+    display:grid;grid-template-columns:240px 1fr;gap:32px;align-items:start}
+  @media(max-width:880px){.wrap{grid-template-columns:1fr;gap:0}}
+
+  /* ===== サイドバー ===== */
+  .side{position:sticky;top:64px;padding:24px 0}
+  @media(max-width:880px){.side{display:none}}
+  .side h4{font-size:12px;color:var(--sub);text-transform:uppercase;letter-spacing:.08em;margin:0 0 10px}
+  .side nav a{display:block;padding:8px 12px;border-radius:10px;color:var(--ink);font-size:14px;font-weight:600;margin-bottom:2px}
+  .side nav a:hover{background:var(--brand-soft);text-decoration:none}
+  .side .note{margin-top:24px;font-size:12px;color:var(--sub);background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px}
+
+  /* ===== ヒーロー ===== */
+  .hero{padding:48px 0 24px}
+  .badge{display:inline-block;background:var(--brand-soft);color:var(--brand);font-weight:800;font-size:13px;padding:6px 14px;border-radius:99px;margin-bottom:16px}
+  .hero h1{font-size:34px;line-height:1.35;margin:0 0 14px;letter-spacing:-.01em}
+  .hero h1 em{font-style:normal;color:var(--brand)}
+  .hero p.lead{font-size:16px;color:var(--sub);margin:0 0 24px}
+  .goal{
+    background:linear-gradient(135deg,#eaf0ff,#e6f7f0);
+    border:1px solid var(--line);border-radius:var(--radius);
+    padding:22px 24px;box-shadow:var(--shadow);
+  }
+  .goal h3{margin:0 0 10px;font-size:17px}
+  .goal ul{margin:0;padding-left:22px}
+  .goal li{margin:6px 0}
+  .goal .out{margin-top:14px;font-weight:800;color:var(--green);font-size:15px}
+
+  /* ===== ステップカード ===== */
+  .step{
+    background:var(--card);border:1px solid var(--line);border-radius:var(--radius);
+    box-shadow:var(--shadow);padding:28px;margin:24px 0;scroll-margin-top:80px;
+    transition:box-shadow .3s, border-color .3s;
+  }
+  .step.done{border-color:var(--green);box-shadow:0 0 0 2px var(--green-soft),var(--shadow)}
+  .step-head{display:flex;align-items:flex-start;gap:16px;margin-bottom:6px}
+  .step-num{
+    flex:none;width:48px;height:48px;border-radius:14px;
+    background:var(--brand);color:#fff;font-weight:800;font-size:18px;
+    display:flex;align-items:center;justify-content:center;flex-direction:column;line-height:1;
+  }
+  .step.done .step-num{background:var(--green)}
+  .step-num small{font-size:9px;font-weight:600;opacity:.85;margin-top:2px}
+  .step-title{flex:1}
+  .step-title h2{margin:0;font-size:22px}
+  .step-meta{display:flex;gap:10px;flex-wrap:wrap;margin-top:6px}
+  .tag{font-size:12px;font-weight:700;padding:3px 10px;border-radius:99px;background:var(--bg);color:var(--sub);border:1px solid var(--line)}
+  .tag.time{background:var(--amber-soft);color:#a86c00;border-color:transparent}
+  .tag.type{background:var(--brand-soft);color:var(--brand);border-color:transparent}
+
+  /* ===== 情報ボックス ===== */
+  .box{border-radius:12px;padding:14px 16px;margin:16px 0;font-size:14.5px}
+  .box .box-h{font-weight:800;margin-bottom:4px;display:flex;align-items:center;gap:6px}
+  .box.tip{background:var(--amber-soft)}
+  .box.safe{background:var(--red-soft)}
+  .box.howto{background:var(--brand-soft)}
+  .box.news{background:var(--green-soft)}
+  .box ul,.box ol{margin:6px 0;padding-left:22px}
+  .box li{margin:4px 0}
+
+  /* ===== ソフト別セクション ===== */
+  .soft-head{
+    display:flex;align-items:center;gap:10px;margin:26px 0 8px;
+    padding-bottom:8px;border-bottom:2px solid var(--line);
+  }
+  .soft-head .soft-badge{
+    flex:none;font-size:13px;font-weight:800;padding:4px 14px;border-radius:99px;color:#fff;
+  }
+  .soft-badge.freee{background:#2864f0}
+  .soft-badge.mf{background:#f05a28}
+  .soft-badge.both{background:#00a86b}
+  .soft-head h3{margin:0;font-size:18px}
+  .route{
+    border:1px solid var(--line);border-radius:12px;padding:14px 18px;margin:12px 0;
+    background:var(--card);
+  }
+  .route .route-h{font-weight:800;font-size:15px;margin-bottom:4px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+  .route .route-tag{font-size:11px;font-weight:800;padding:2px 10px;border-radius:99px}
+  .route .route-tag.easy{background:var(--green-soft);color:#0a7d54}
+  .route .route-tag.pro{background:var(--amber-soft);color:#a86c00}
+
+  /* ===== コピペボックス ===== */
+  .copy{position:relative;margin:16px 0}
+  .copy-label{font-size:12px;font-weight:800;color:var(--sub);margin-bottom:6px;display:flex;align-items:center;gap:6px}
+  .copy pre{
+    margin:0;background:#0f1b2d;color:#e7eefc;border-radius:12px;
+    padding:16px 16px;overflow-x:auto;font-size:13.5px;line-height:1.7;
+    font-family:"SFMono-Regular",Consolas,"Liberation Mono",Menlo,monospace;white-space:pre-wrap;
+  }
+  .copy-btn{
+    position:absolute;top:30px;right:10px;
+    background:rgba(255,255,255,.12);color:#fff;border:1px solid rgba(255,255,255,.2);
+    border-radius:8px;padding:5px 12px;font-size:12px;font-weight:700;cursor:pointer;transition:.2s;
+  }
+  .copy-btn:hover{background:rgba(255,255,255,.25)}
+  .copy-btn.copied{background:var(--green);border-color:var(--green)}
+
+  /* ===== 2段階構造の図 ===== */
+  .flow{
+    display:flex;flex-direction:column;gap:0;margin:18px 0;
+  }
+  .flow-item{
+    background:var(--card);border:1px solid var(--line);border-radius:14px;
+    padding:14px 18px;box-shadow:var(--shadow);
+  }
+  .flow-item h5{margin:0 0 4px;font-size:15px}
+  .flow-item p{margin:0;font-size:13.5px;color:var(--sub)}
+  .flow-item .who{display:inline-block;font-size:11px;font-weight:800;padding:2px 10px;border-radius:99px;margin-bottom:6px}
+  .flow-item .who.local{background:var(--green-soft);color:#0a7d54}
+  .flow-item .who.ai{background:var(--brand-soft);color:var(--brand)}
+  .flow-item .who.human{background:var(--amber-soft);color:#a86c00}
+  .flow-arrow{text-align:center;color:var(--sub);font-size:18px;line-height:1.6;padding:2px 0}
+
+  /* ===== キットの中身テーブル ===== */
+  .kit-table{width:100%;border-collapse:collapse;margin:14px 0;font-size:13.5px}
+  .kit-table th,.kit-table td{border:1px solid var(--line);padding:8px 12px;text-align:left;vertical-align:top}
+  .kit-table th{background:var(--bg);font-size:12.5px;color:var(--sub)}
+  .kit-table td code{background:var(--bg);padding:2px 6px;border-radius:6px;font-size:12.5px;white-space:nowrap}
+
+  /* ===== details ===== */
+  details{border:1px solid var(--line);border-radius:12px;margin:12px 0;overflow:hidden;background:var(--card)}
+  details summary{cursor:pointer;padding:12px 16px;font-weight:700;font-size:14.5px;list-style:none;display:flex;align-items:center;gap:8px;background:var(--bg)}
+  details summary::-webkit-details-marker{display:none}
+  details summary::before{content:"▶";font-size:10px;color:var(--sub);transition:transform .2s}
+  details[open] summary::before{transform:rotate(90deg)}
+  details .body{padding:14px 18px;font-size:14.5px}
+  details .body ul,details .body ol{padding-left:22px;margin:8px 0}
+  details .body li{margin:6px 0}
+
+  /* ===== 完了チェック ===== */
+  .check{
+    display:flex;align-items:center;gap:12px;margin-top:18px;
+    background:var(--green-soft);border:1px dashed var(--green);
+    border-radius:12px;padding:14px 16px;cursor:pointer;user-select:none;
+  }
+  .check input{width:20px;height:20px;accent-color:var(--green);cursor:pointer}
+  .check label{font-weight:800;color:#0a7d54;cursor:pointer;font-size:15px}
+
+  /* ===== 修了 ===== */
+  .finish{
+    background:linear-gradient(135deg,var(--brand),#5b8cff);color:#fff;
+    border-radius:var(--radius);padding:36px 28px;text-align:center;margin:32px 0 64px;
+    box-shadow:var(--shadow-lg);
+  }
+  .finish h2{margin:0 0 10px;font-size:26px}
+  .finish p{margin:0 0 18px;opacity:.95}
+  .finish .cta{display:inline-block;background:#fff;color:var(--brand);font-weight:800;padding:12px 28px;border-radius:99px}
+  .finish.celebrate{animation:pop .6s}
+  @keyframes pop{0%{transform:scale(.96)}50%{transform:scale(1.02)}100%{transform:scale(1)}}
+
+  hr.soft{border:none;border-top:1px solid var(--line);margin:22px 0}
+
+  /* ===== コース全体ナビ ===== */
+  .course-nav{
+    background:var(--card);border-bottom:1px solid var(--line);
+    padding:12px 20px;
+  }
+  .course-nav-inner{
+    max-width:1080px;margin:0 auto;
+    display:flex;align-items:center;gap:8px;flex-wrap:wrap;
+  }
+  .course-nav-label{font-size:12px;font-weight:800;color:var(--sub);margin-right:4px;white-space:nowrap}
+  .course-pill{
+    display:inline-flex;align-items:center;gap:4px;
+    font-size:13px;font-weight:700;padding:6px 12px;border-radius:99px;
+    border:1px solid var(--line);background:var(--bg);color:var(--ink);
+    white-space:nowrap;
+  }
+  .course-pill:hover{background:var(--brand-soft);text-decoration:none}
+  .course-pill.current{background:var(--brand);border-color:var(--brand);color:#fff}
+  .course-pill.current:hover{background:var(--brand)}
+  .course-pill.soon{
+    background:var(--bg);color:#aab4c0;border-color:var(--line);
+    cursor:default;pointer-events:none;
+  }
+  .course-pill.soon::after{content:"準備中";font-size:10px;font-weight:800;margin-left:2px}
+
+  /* ===== 投稿フォーム ===== */
+  .post-field{margin:12px 0}
+  .post-field label{display:block;font-size:13px;font-weight:700;color:var(--sub);margin-bottom:6px}
+  .post-field input[type=text],.post-field textarea{
+    width:100%;border:1px solid var(--line);border-radius:10px;
+    padding:10px 12px;font-size:14.5px;font-family:inherit;color:var(--ink);
+    background:var(--bg);resize:vertical;
+  }
+  .post-field textarea{min-height:120px;line-height:1.7}
+  .post-submit{
+    display:inline-flex;align-items:center;gap:8px;
+    background:var(--brand);color:#fff;font-weight:800;font-size:15px;
+    border:none;border-radius:99px;padding:12px 28px;cursor:pointer;transition:.2s;
+  }
+  .post-submit:hover{background:#1d4fd1}
+  .post-submit:disabled{background:var(--sub);cursor:wait}
+  .post-status{font-size:13.5px;font-weight:700;margin-top:10px}
+  .post-status.ok{color:var(--green)}
+  .post-status.err{color:var(--red)}
+  .board-link{
+    display:inline-flex;align-items:center;gap:6px;margin-top:14px;
+    font-size:13.5px;font-weight:700;color:var(--brand);
+  }
+</style>
+</head>
+<body>
+
+<!-- 進捗バー -->
+<div class="progress-bar">
+  <div class="logo">畠山式AI税理士<span>コミュニティ</span></div>
+  <div class="progress-track"><div class="progress-fill" id="fill"></div></div>
+  <div class="progress-count"><b id="cnt">0</b>/5 課題クリア</div>
+</div>
+
+<!-- コース全体ナビ -->
+<div class="course-nav">
+  <div class="course-nav-inner">
+    <span class="course-nav-label">📚 コース全体</span>
+    <a class="course-pill" href="index.html">第1回</a>
+    <a class="course-pill current" href="vol03.html">第3回</a>
+    <a class="course-pill soon" href="vol05.html">第5回</a>
+    <a class="course-pill soon" href="vol07.html">第7回</a>
+    <a class="course-pill soon" href="vol09.html">第9回</a>
+    <a class="course-pill soon" href="update01.html">アプデ①</a>
+    <a class="course-pill soon" href="update02.html">アプデ②</a>
+    <a class="course-pill" href="glossary.html" style="margin-left:auto;background:var(--amber-soft);border-color:transparent;color:#a86c00">📖 用語集</a>
+  </div>
+</div>
+
+<div class="wrap">
+  <!-- サイドバー -->
+  <aside class="side">
+    <h4>このページ</h4>
+    <nav>
+      <a href="#hero">🎯 ゴール</a>
+      <a href="#t1">① 事前準備1：環境チェック</a>
+      <a href="#t2">② 事前準備2：MCP連携</a>
+      <a href="#t3">③ ルールを育てる2段階構造</a>
+      <a href="#t4">④ 体験①：未処理明細の登録</a>
+      <a href="#t5">⑤ 体験②：請求書OCR起票（共通）</a>
+      <a href="#post">✍️ 恩送りメモを投稿</a>
+      <a href="#faq">❓ よくあるつまずき</a>
+      <a href="#finish">🎉 修了</a>
+    </nav>
+    <h4 style="margin-top:24px">こまったら</h4>
+    <nav>
+      <a href="glossary.html">📖 用語集（横文字はここ）</a>
+    </nav>
+    <div class="note">
+      <b>第1回の完了が前提です</b><br>
+      Claude Codeデスクトップアプリの環境構築まで済んでいない方は、先に<a href="index.html">第1回の課題ページ</a>を進めてください🌸
+    </div>
+  </aside>
+
+  <!-- メイン -->
+  <main>
+    <!-- ヒーロー -->
+    <section class="hero" id="hero">
+      <span class="badge">第3回 / 全シリーズ</span>
+      <h1>自動記帳の本丸。<br><em>未処理明細の登録 × OCR起票を、自分の会計ソフトで体験する</em></h1>
+      <p class="lead">第1回は、freee MCPで「AIが1件起票する」体験でした。第3回はそれを実務の型にします。テーマは2つ。<b>①未処理明細の登録（freee会計・MF会計）</b>と<b>②請求書のOCR起票（共通）</b>です。そして今回から、<b>マネーフォワード クラウド会計のユーザーもMCP連携で同じ体験ができます</b>。MFのアップデートで、データ連携の未仕訳明細から直接計上できるようになりました。</p>
+
+      <div class="goal">
+        <h3>🎯 この回を終えると…</h3>
+        <ul>
+          <li><b>未処理明細の登録</b>を、自分の会計ソフト（freee会計／MF会計）でAIに任せる流れを体験します</li>
+          <li>体験の中で<b>「勘定科目ルールを育てる」感覚</b>を持ち帰ります（自分のルール表に1行足します）</li>
+          <li><b>請求書のOCR起票</b>を体験します（畠山自作の「バクラク請求書風」レビューアプリのライブデモつき）</li>
+          <li>畠山の本番の形（<b>Python×API</b>）も知り、MCPとの使い分けを自分の言葉で説明できるようになります</li>
+        </ul>
+        <div class="out">⏱ 目安：事前準備 約15分＋当日ワーク　／　💪 難易度：初級〜中級（コードは書きません。セットアップも最小限です）</div>
+      </div>
+    </section>
+
+    <!-- ===== ステップ1 ===== -->
+    <section class="step" id="t1">
+      <div class="step-head">
+        <div class="step-num">1<small>/ 5</small></div>
+        <div class="step-title">
+          <h2>事前準備1：環境チェック（第1回の到達点確認）🔍</h2>
+          <div class="step-meta">
+            <span class="tag time">⏱ 約5分</span>
+            <span class="tag type">🤝 事前にやってくる</span>
+          </div>
+        </div>
+      </div>
+
+      <p>第3回のワークは、第1回で作った環境の上に積み上げます。確認するのは<b>2点だけ</b>です。</p>
+
+      <div class="box howto">
+        <div class="box-h">📋 確認すること</div>
+        <ol>
+          <li><b>自分の会計ソフトにログインできる</b>（freee会計またはマネーフォワード クラウド会計。お試し期間が切れている場合、連携が停止していることがあります）</li>
+          <li><b>Claude Codeデスクトップアプリが起動する</b>（Proプランの課金が有効か）</li>
+        </ol>
+      </div>
+
+      <div class="box tip">
+        <div class="box-h">💡 今回、PythonやAPIキーの事前準備は不要です</div>
+        第3回の体験はMCP連携だけで進められる設計にしました。つまり<b>追加のインストール作業はほぼゼロ</b>です。畠山が本番で使っているPython×APIの仕組み（配布キット）は、ステップ④の「畠山ルート」で紹介します。当日はデモを見るだけでOK。キットは手元に残るので、後日じっくり動かせます。
+      </div>
+
+      <div class="check" onclick="toggle(this,event)">
+        <input type="checkbox" data-step="1">
+        <label>✅ 会計ソフトへのログインと、Claude Codeの起動を確認した</label>
+      </div>
+    </section>
+
+    <!-- ===== ステップ2 ===== -->
+    <section class="step" id="t2">
+      <div class="step-head">
+        <div class="step-num">2<small>/ 5</small></div>
+        <div class="step-title">
+          <h2>事前準備2：会計ソフトとMCP連携する 🔌</h2>
+          <div class="step-meta">
+            <span class="tag time">⏱ 約10分</span>
+            <span class="tag type">🤝 事前にやってくる</span>
+          </div>
+        </div>
+      </div>
+
+      <p>自分が使っている会計ソフトに合わせて、どちらか一方だけ進めてください。両方使っている方は両方つないでOKです。</p>
+
+      <div class="box news">
+        <div class="box-h">🆕 今回の目玉：MF会計もMCPで「未仕訳明細から直接計上」できるようになりました</div>
+        マネーフォワード クラウド会計の公式MCPサーバーは全プランで提供されています。アップデートで<b>データ連携の未仕訳明細をAIが直接取得して、計上まで進められる</b>ようになりました。これまで「MFユーザーは見学」だった起票体験が、今回から自分の手でできます。
+      </div>
+
+      <div class="soft-head">
+        <span class="soft-badge freee">freee会計</span>
+        <h3>第1回で接続したfreee MCPが生きているか確認する</h3>
+      </div>
+
+      <p>第1回でfreee公式MCPプラグインを接続済みのはずです。下のコピペ文で動作確認してください。認証が切れていた場合も、Claudeが再認証まで案内してくれます。</p>
+
+      <div class="copy">
+        <div class="copy-label">📋 デスクトップアプリに貼るだけ：freee MCPの動作確認</div>
+        <button class="copy-btn" onclick="copyCode(this)">コピー</button>
+<pre>freee MCPの接続状態を確認してください。
+接続できていたら、事業所の一覧を取得して見せてください。
+
+接続できていない場合や認証が切れている場合は、
+再接続・再認証の手順を1つずつ案内してください。
+（第1回でインストールしたfreee公式MCPプラグインを使います）</pre>
+      </div>
+
+      <details>
+        <summary>🛠 freee MCPをまだ入れていない・入れ直したい方はこちら</summary>
+        <div class="body">
+          <p>接続手順は<a href="index.html">第1回の課題ページ</a>のステップ④にまとまっています。「プラグインのインストール → freee認証」の2つのコピペ文を順に送るだけです。</p>
+        </div>
+      </details>
+
+      <div class="soft-head">
+        <span class="soft-badge mf">MF会計</span>
+        <h3>マネーフォワード クラウド会計のMCPサーバーを接続する</h3>
+      </div>
+
+      <p>MF公式のMCPサーバー（リモートMCP）を接続します。インストール作業はありませんが、<b>最初の1回だけ、MF側の「アプリポータル」での事前設定</b>が必要です。詳しい手順は配布資料「MF会計MCPセットアップガイド」にもまとめてあります。</p>
+
+      <div class="box howto">
+        <div class="box-h">🏢 まず、体験に使う「事業者」を決める</div>
+        MF会計のMCP連携は、<b>事業者（事業所）ごとに設定と認証を行う</b>仕組みです。当日は<b>ご自身の事務所の事業者か、テスト用に作った事業者</b>を使ってください。顧問先の本番事業者は、顧問先側の全権管理者による事前設定が必要なうえ本番データのため、体験には使いません。
+      </div>
+
+      <div class="box howto">
+        <div class="box-h">🔑 事前設定：アプリポータルで「アプリ連携権限」を付ける（最初の1回だけ）</div>
+        <p>この設定ができるのは、その事業者で<b>「全権管理」権限を持つユーザー</b>だけです。ご自身の事務所やテスト用事業者なら、通常はご自身が全権管理者なのでそのまま進められます。</p>
+        <ol>
+          <li>ブラウザで <a href="https://app-portal.moneyforward.com/" target="_blank" rel="noopener">アプリポータル</a> を開き、「マネーフォワード IDでログイン」する</li>
+          <li>体験に使う事業者の「選択」をクリックする（「連携中アプリ」の画面が開けばOK。初回はここでアプリポータルの利用が始まります）</li>
+          <li>左メニューの「ユーザー」から、連携操作を行うユーザー（ご自身）をクリックする</li>
+          <li>「ユーザー情報」画面の右上「編集」を押し、「アプリ連携権限」の<b>「アプリ連携」と「クラウド会計・確定申告」の両方にチェック</b>を入れて「保存」する</li>
+        </ol>
+        <p>「設定を保存しました。」と表示されたら事前設定は完了です。ここまで済ませてから、下のコピペ文で接続に進んでください。</p>
+      </div>
+
+      <div class="copy">
+        <div class="copy-label">📋 デスクトップアプリに貼るだけ：MF会計MCPの接続</div>
+        <button class="copy-btn" onclick="copyCode(this)">コピー</button>
+<pre>マネーフォワード クラウド会計の公式MCPサーバー（リモートMCP）を
+Claude Codeに接続してください。接続先URLは次のとおりです。
+https://beta.mcp.developers.biz.moneyforward.com/mcp/ca/v3
+
+設定できたら、ブラウザでの認証（ログインと許可）に進めてください。
+私がブラウザで操作すべき場面が来たら、何をすればよいか教えてください。
+認証では、体験に使う事業者（自分の事務所またはテスト用）を選びます。</pre>
+      </div>
+
+      <div class="box tip">
+        <div class="box-h">💡 認証が終わったら、Claude Codeをいったん開き直す</div>
+        接続した直後の画面のままだと、MFのツールが読み込まれず「接続したのに使えない」状態になることがあります。認証まで終わったら<b>新しいセッション（新しいチャット）を開いて</b>、下のコピペ文で動作確認してください。
+      </div>
+
+      <div class="copy">
+        <div class="copy-label">📋 デスクトップアプリに貼るだけ：MF会計MCPの動作確認</div>
+        <button class="copy-btn" onclick="copyCode(this)">コピー</button>
+<pre>マネーフォワード クラウド会計のMCPで、いま接続されている
+事業者の情報を取得して見せてください。
+体験に使うつもりの事業者と一致しているかを確認したいです。</pre>
+      </div>
+
+      <div class="box safe">
+        <div class="box-h">🔒 安全メモ</div>
+        <ul>
+          <li>MCP連携の認証は、<b>必ず自分のブラウザで自分のアカウント</b>で行ってください（IDやパスワードをチャットに貼らないこと）</li>
+          <li>体験には、ご自身の事務所の事業者かテスト用の事業者を使い、少額・少件数から試してください（顧問先の本番事業者は使わない）</li>
+          <li>MF会計で別の事業者に切り替えたいときは、チャットのセッションをいったん終了してから認証をやり直します（同じセッションの途中では切り替わりません）</li>
+        </ul>
+      </div>
+
+      <div class="check" onclick="toggle(this,event)">
+        <input type="checkbox" data-step="2">
+        <label>✅ 自分の会計ソフトのMCP連携を確認・接続した（事業所情報の取得までできた）</label>
+      </div>
+    </section>
+
+    <!-- ===== ステップ3 ===== -->
+    <section class="step" id="t3">
+      <div class="step-head">
+        <div class="step-num">3<small>/ 5</small></div>
+        <div class="step-title">
+          <h2>「勘定科目ルールを育てる」2段階構造を理解する 🧠</h2>
+          <div class="step-meta">
+            <span class="tag time">⏱ 約10分（当日も解説します）</span>
+            <span class="tag type">📖 考え方</span>
+          </div>
+        </div>
+      </div>
+
+      <p>ここが第3回いちばんの肝です。畠山の自動記帳は「全部AIに丸投げ」ではありません。<b>自分のルール表とAIの2段階</b>に分けることで、速く・安く・間違えにくい仕組みにしています。freeeでもMFでも、考え方は同じです。</p>
+
+      <div class="flow">
+        <div class="flow-item">
+          <span class="who local">第1段階｜自分のルール表</span>
+          <h5>「勘定科目ルール」を機械的に適用する</h5>
+          <p>未処理明細の摘要を、あらかじめ作った勘定科目ルール（例：「Amazon」→消耗品費、「JR」→旅費交通費）と突き合わせます。ルールに一致すれば科目はその場で確定。迷いがなく、ブレません。</p>
+        </div>
+        <div class="flow-arrow">↓</div>
+        <div class="flow-item">
+          <span class="who ai">第2段階｜AI</span>
+          <h5>ルールで決まらなかった「新顔」の明細だけ、AIが科目を考える</h5>
+          <p>ルールにない明細だけ、AIがふさわしい勘定科目の候補と理由を出します。給与・税金・借入返済のような明細はNGキーワードで「要確認」に振り分けて、自動登録から外します。</p>
+        </div>
+        <div class="flow-arrow">↓</div>
+        <div class="flow-item">
+          <span class="who human">最後｜人（税理士）</span>
+          <h5>人が承認したものだけ計上する。そしてルール表に1行足す</h5>
+          <p>一覧を見て「OK」と言ったものだけが計上されます。そして今日AI判定だった明細は、次回からルールで決まるように<b>ルール表に追加</b>します。この繰り返しでルール表が育ち、AIに頼る場面が減っていきます。</p>
+        </div>
+      </div>
+
+      <div class="box tip">
+        <div class="box-h">💡 なぜ「ルールを育てる」の？</div>
+        <ul>
+          <li><b>速い・安い</b>：よくある明細（毎月のサブスク、いつもの交通費）はルールで即判定。AIの出番を最小限にできます</li>
+          <li><b>間違えにくい</b>：判断基準がルール表として残るので、AI任せの「気分次第の仕訳」になりません</li>
+          <li><b>資産になる</b>：ルール表は自分の事務所の「判断の型」の言語化そのもの。育てるほど、どのツールに乗り換えても使い回せます</li>
+        </ul>
+      </div>
+
+      <div class="check" onclick="toggle(this,event)">
+        <input type="checkbox" data-step="3">
+        <label>✅ 「ルール判定→ルール外だけAI判定→人が承認→ルールに追加」の流れを自分の言葉で説明できる</label>
+      </div>
+    </section>
+
+    <!-- ===== ステップ4 ===== -->
+    <section class="step" id="t4">
+      <div class="step-head">
+        <div class="step-num">4<small>/ 5</small></div>
+        <div class="step-title">
+          <h2>体験①：未処理明細の登録（freee会計／MF会計）📥</h2>
+          <div class="step-meta">
+            <span class="tag time">⏱ 当日ワーク 約40分</span>
+            <span class="tag type">🚀 本番・体験</span>
+          </div>
+        </div>
+      </div>
+
+      <p>いよいよ本丸です。自分の会計ソフトの未処理明細をAIに取得させ、ルール表で判定し、承認したものだけ計上します。最後に<b>ルール表へ1行追加する</b>ところまでが今日の体験です。</p>
+
+      <div class="box howto">
+        <div class="box-h">📋 進め方（当日・freee／MF共通）</div>
+        <ol>
+          <li>配布資料の<b>「勘定科目ルール.md」（ルール表のひな形）</b>をダウンロードして、作業用フォルダ（例：ドキュメント内の「AI経理体験」フォルダ）に置く</li>
+          <li>Claude Codeでそのフォルダを開く</li>
+          <li>自分の会計ソフトのコピペ文（下のAまたはM）を送信する</li>
+          <li>一覧表を確認して、OKな明細だけ承認 → 計上</li>
+          <li>仕上げのコピペ文（R）で、今日の「新顔」をルール表に追加する</li>
+          <li><b>（宿題）</b>発展編のコピペ文（S）で、過去の仕訳帳からルール表を一気に育てる</li>
+        </ol>
+      </div>
+
+      <div class="soft-head">
+        <span class="soft-badge freee">freee会計</span>
+        <h3>2つのルートがあります</h3>
+      </div>
+
+      <p>freeeユーザーには<b>2つのルート</b>を提示します。当日のワークはルートA（MCP）で進めます。ルートBは畠山が本番で使っている形で、当日はライブデモをお見せします。</p>
+
+      <div class="route">
+        <div class="route-h">ルートA：MCPサーバー連携 <span class="route-tag easy">簡単・当日はこちら</span></div>
+        <p style="margin:0;font-size:14px;color:var(--sub)">第1回でつないだfreee MCPをそのまま使います。追加セットアップなし。Claude Codeが明細の取得から計上までを対話で進めてくれます。</p>
+      </div>
+
+      <div class="copy">
+        <div class="copy-label">📋 コピペ文A：freee MCPで未処理明細を登録する</div>
+        <button class="copy-btn" onclick="copyCode(this)">コピー</button>
+<pre>freee MCPを使います。
+最初に、いま接続されている事業所名を確認して見せてください。
+私が「その事業所でOK」と言ってから、次に進んでください。
+
+freeeの「自動で経理」に溜まっている
+未処理の入出金明細を、5件だけ取得してください。
+
+次に、このフォルダにある「勘定科目ルール.md」を読んで、
+明細を1件ずつ次の順で判定してください。
+1. NGキーワード（給与・税金・借入返済など）に当たる
+   → 「要確認」にして、登録対象から外す
+2. ルール表のキーワードに一致
+   → その勘定科目で「登録候補」（判定元＝ルール）
+3. どれにも当たらない
+   → あなたが勘定科目の候補と理由を考える（判定元＝AI）
+
+結果を「明細の内容／金額／判定（登録候補・要確認）／
+判定元（ルール・AI）／勘定科目／理由」の表で見せてください。
+
+私が「OK」と言った明細だけ、freeeに取引として登録してください。
+登録前に必ず表を見せて、私の承認を待ってください。</pre>
+      </div>
+
+      <div class="route">
+        <div class="route-h">ルートB：Python×APIで必要情報のみ取得 <span class="route-tag pro">畠山の方法・デモ＋自主トレ</span></div>
+        <p style="margin:0;font-size:14px;color:var(--sub)">畠山が顧問先60社で毎晩回している本番の形です。配布キット「freeeオート経理（体験版）」で、後日自分のPCでも動かせます。</p>
+      </div>
+
+      <div class="box tip">
+        <div class="box-h">💡 なぜ畠山はMCPではなくAPIなのか（ここが使い分けの肝）</div>
+        MCPは「共通プラグ」なので何でも取れて便利です。その代わり、明細の全項目がそのままAIに流れます。畠山の本番は逆の発想で、<b>Pythonが日付・金額・摘要など必要な項目だけを取り出し、ルール判定まで手元で済ませ、AIにはルールで決まらなかった明細だけを渡します</b>。つまり「不要な情報を落としてからAIに渡す」形です。
+        <ul>
+          <li><b>速い・安い</b>：AIとのやり取りが最小限になり、大量処理でも詰まらない</li>
+          <li><b>渡しすぎない</b>：明細に混ざる個人名などの情報を、必要以上にAIへ流さない</li>
+          <li><b>毎晩自動で回せる</b>：人がチャットに付き添わなくても、プログラムだけで完結する</li>
+        </ul>
+        入口はMCPで十分。件数と顧問先が増えてきたら、この形に進化させる。それが畠山の使い分けです。
+      </div>
+
+      <div class="box howto">
+        <div class="box-h">🔎 「不要な情報を落とす」の中身。API経由で削ぎ落としているもの（畠山の本番スクリプトの実例）</div>
+        <p style="margin:6px 0 10px">freeeの未処理明細には、勘定科目の判定に不要な情報も一緒に載っています。たとえば法人カードの明細には利用者名が、振込明細にはカナの人名や承認番号が付いてきます。MCP経由では明細がそのままAIに渡りますが、畠山のAPI経由では<b>Pythonが手元で削ぎ落としてから</b>AIに渡します。実際の違いはこうです。</p>
+        <table class="kit-table">
+          <tr><th>明細に載っている情報</th><th>MCP経由</th><th>畠山のAPI経由</th></tr>
+          <tr><td>摘要・金額</td><td>AIに渡る</td><td>AIに渡る（判定に使うのはこの2項目だけ）</td></tr>
+          <tr><td>取引日・口座情報・<b>口座残高</b>など明細の他の項目</td><td>そのまま渡る</td><td><b>渡さない</b>（Pythonが必要な項目だけ取り出す）</td></tr>
+          <tr><td>法人カードの利用者名<br>（例：AMAZON<b>_ヤマダ タロウ</b>）</td><td>そのまま渡る</td><td>「AMAZON_***」に<b>マスキング</b>してから渡す</td></tr>
+          <tr><td>振込明細のカナ人名（報酬の振込先、依頼人名など）</td><td>そのまま渡る</td><td>「***」にマスキングしてから渡す</td></tr>
+          <tr><td>承認番号・口座番号</td><td>そのまま渡る</td><td>「****」にマスキングしてから渡す</td></tr>
+          <tr><td>ルール表で科目が決まる明細そのもの</td><td>全件AIが読む</td><td><b>AIに一切渡らない</b>（手元のルール表で確定）</td></tr>
+        </table>
+        <p style="margin:10px 0 0;font-size:13.5px;color:var(--sub)">※ どの会計事務所の明細かという情報（事業所名）も、API経由ではAIに渡していません。AIが見るのは「マスキング済みの摘要と金額」だけです。</p>
+      </div>
+
+      <div class="box tip">
+        <div class="box-h">🧭 どちらを選ぶ？（どちらも正解です）</div>
+        上の表は「APIが正しい」という話ではありません。渡る情報と手間のトレードオフです。自分の状況に合わせて選んでください。
+        <ul>
+          <li><b>MCP経由が合う人</b>：自分の事業所やテスト環境で、少件数を対話しながら処理する。追加セットアップなしで今日から始めたい。明細に他人の個人情報がほぼ含まれない</li>
+          <li><b>API経由（畠山ルート）が合う人</b>：顧問先の明細を扱う。従業員給与や外注報酬の振込など、明細に人名が頻繁に載る。件数が多い。毎晩自動で回したい</li>
+        </ul>
+        おすすめの順番は「まずMCPで体験 → 顧問先データや件数が増えて、AIに渡す情報を絞りたくなったら配布キットでAPI方式へ」。今日のワークはMCPで大丈夫です。
+      </div>
+
+      <details>
+        <summary>📦 配布キット「freeeオート経理（体験版）」で畠山ルートを試す（後日の自主トレ用）</summary>
+        <div class="body">
+          <p>キット一式は、Google Driveの会員様配布資料フォルダ（テンプレート &gt; 第3回-記帳）に <b>ZIPファイル（freee-auto-keiri-kit.zip）</b>で置いてあります。動かすには<b>Python</b>と<b>Anthropic APIキー</b>が必要です（下の手順に含まれています）。</p>
+          <table class="kit-table">
+            <tr><th>ファイル</th><th>役割</th></tr>
+            <tr><td><code>README.md</code></td><td>セットアップと実行の手順書（Claude Codeが読んで進めてくれます）</td></tr>
+            <tr><td><code>CLAUDE.md</code></td><td>Claude Code用の案内ルール（フォルダを開くと自動で読み込まれます）</td></tr>
+            <tr><td><code>.env.example</code></td><td>APIキーなどを入れる設定ファイルのひな形（コピーして<code>.env</code>を作ります）</td></tr>
+            <tr><td><code>auto_keiri.py</code></td><td>本体。明細取得→ルール判定→ルール外はAI判定→freee計上</td></tr>
+            <tr><td><code>invoice_ocr.py</code></td><td>請求書PDFの読み取り→freee起票（体験②の畠山ルート版）</td></tr>
+            <tr><td><code>rules.csv</code></td><td>勘定科目ルール表（畠山の本番ルール表から汎用キーワード約160個を抜き出した実物ベース）</td></tr>
+            <tr><td><code>freee_auth.py</code></td><td>freee APIとの認証</td></tr>
+          </table>
+          <p style="font-size:13.5px;color:var(--sub)">※ プログラム本体（<code>auto_keiri.py</code>など）はキット内の <code>.claude/skills/scripts/</code> フォルダに入っています。場所を覚える必要はありません。Claude Codeに「セットアップして」「体験①をやりたい」と話しかければ、正しい場所のファイルを実行してくれます。</p>
+          <p><b>進め方（初めての方はこの順番どおりに）</b></p>
+          <ol>
+            <li><b>Anthropic APIキーを取得する</b>：<a href="https://console.anthropic.com" target="_blank" rel="noopener">console.anthropic.com</a> でアカウント作成 → Billingでクレジット購入（最低額の5ドルで十分。体験で使うのは数円〜数十円程度）→ API Keysでキーを作成し、「sk-ant-」で始まる文字列を控える（<b>作成した瞬間にしか表示されません</b>）</li>
+            <li><b>ZIPをダウンロードする</b>：Google Driveの会員様配布資料フォルダ（テンプレート &gt; 第3回-記帳）を開き、<code>freee-auto-keiri-kit.zip</code> を右クリック →「ダウンロード」</li>
+            <li><b>ZIPを展開する</b>：ダウンロードしたZIPを右クリック →「すべて展開」（Macはダブルクリック）。出てきた <code>freee-auto-keiri-kit</code> フォルダを、ドキュメントなど分かりやすい場所に移動する<br><span style="font-size:13px;color:var(--sub)">※ ZIPを展開せずに中のファイルを開くと動きません。必ず「すべて展開」してから使ってください</span></li>
+            <li><b>Claude Codeデスクトップアプリで開く</b>：アプリを起動して「フォルダを開く」から、いま移動した <code>freee-auto-keiri-kit</code> フォルダを選ぶ</li>
+            <li><b>次のコピペ文を送る</b>：あとはClaude Codeが1ステップずつ案内してくれます</li>
+          </ol>
+          <div class="copy">
+            <div class="copy-label">📋 キットのセットアップ（Pythonの用意から全部Claudeに任せる）</div>
+            <button class="copy-btn" onclick="copyCode(this)">コピー</button>
+<pre>このフォルダは、配布された「freeeオート経理（体験版）」のキットです。
+README.md を読んで、実行に必要なセットアップを進めてください。
+
+1. Python環境の確認（入っていなければ、インストールから案内してください）
+2. 必要なライブラリのインストール
+3. 設定ファイル（.env）の作成。Anthropic APIキーとfreeeの設定値を
+   どこに入力すればよいか、私に分かりやすく教えてください
+4. freeeアプリの作成と認証（freee_auth.py）も、README.md の手順に
+   沿って1つずつ案内してください
+
+セットアップが終わったら、体験①（auto_keiri.py）を「見るだけモード」で
+実行して、判定結果の一覧を見せてください。
+freeeへの登録は、私が明細を選んで承認するまで行わないでください。</pre>
+          </div>
+          <p><b>安全メモ</b>：APIキーはパスワードと同じ秘密情報です。掲示板・チャット・SNSには絶対に貼らず、.envファイルの中にだけ書いてください。万一漏れたら、console.anthropic.comでそのキーを削除すれば大丈夫です。</p>
+          <p><b>本物と同じ構成です</b>：畠山の本番スクリプトも「ルール一致は即確定、ルールで決められなかった明細だけAIに回す」という同じ2段階で動いています。rules.csvを育てるほど速く・安く・正確になる。この育てる感覚まで含めて本物の運用です。</p>
+        </div>
+      </details>
+
+      <div class="soft-head">
+        <span class="soft-badge mf">MF会計</span>
+        <h3>MCPで未仕訳明細から直接計上する</h3>
+      </div>
+
+      <p>ステップ②で接続したMF公式MCPを使います。アップデートで可能になった<b>「未仕訳明細の取得→計上」</b>を、そのまま体験します。</p>
+
+      <div class="copy">
+        <div class="copy-label">📋 コピペ文M：MF会計MCPで未仕訳明細を計上する</div>
+        <button class="copy-btn" onclick="copyCode(this)">コピー</button>
+<pre>マネーフォワード クラウド会計のMCPを使います。
+最初に、いま接続されている事業者名を確認して見せてください。
+私が「その事業者でOK」と言ってから、次に進んでください。
+
+データ連携で取り込まれた未仕訳の明細を、5件だけ取得してください。
+
+次に、このフォルダにある「勘定科目ルール.md」を読んで、
+明細を1件ずつ次の順で判定してください。
+1. NGキーワード（給与・税金・借入返済など）に当たる
+   → 「要確認」にして、計上対象から外す
+2. ルール表のキーワードに一致
+   → その勘定科目で「計上候補」（判定元＝ルール）
+3. どれにも当たらない
+   → あなたが勘定科目の候補と理由を考える（判定元＝AI）
+
+結果を「明細の内容／金額／判定（計上候補・要確認）／
+判定元（ルール・AI）／勘定科目／理由」の表で見せてください。
+
+私が「OK」と言った明細だけ、仕訳として計上してください。
+計上前に必ず表を見せて、私の承認を待ってください。</pre>
+      </div>
+
+      <div class="soft-head">
+        <span class="soft-badge both">共通</span>
+        <h3>仕上げ：今日の「新顔」をルール表に追加する</h3>
+      </div>
+
+      <p>計上が終わったら、必ずこの仕上げまでやってください。<b>ここが「ルールを育てる」体験の核心</b>です。</p>
+
+      <div class="copy">
+        <div class="copy-label">📋 コピペ文R：ルール表を育てる（freee／MF共通）</div>
+        <button class="copy-btn" onclick="copyCode(this)">コピー</button>
+<pre>今回「判定元＝AI」になった明細について、
+勘定科目ルール.md に追加するルール案を作ってください。
+（キーワード／勘定科目／メモ の形式で）
+
+私が「OK」と言ったルールだけ、勘定科目ルール.md に追記してください。
+これで次回から、同じ明細はルールで即決まるようになります。</pre>
+      </div>
+
+      <div class="box safe">
+        <div class="box-h">🔒 安全メモ（freee／MF共通）</div>
+        <ul>
+          <li>最初は<b>少額・5件以内</b>で試してください。いきなり全件処理はしないこと</li>
+          <li>「登録前に必ず表を見せて」の一文は消さないでください。<b>承認してから計上</b>が鉄則です</li>
+          <li>給与・税金・借入返済・請求書の決済に見える明細は登録しない（二重計上や誤登録のもとです）</li>
+          <li><b>freeeの方</b>：取引登録した後も、「自動で経理」には同じ明細が未処理のまま残ります。freee画面で該当明細を「無視」にするか、登録済みの取引と手動で紐づけて、二重登録を防いでください</li>
+          <li><b>MFの方</b>：計上後にMFの画面で該当明細の状態を確認し、同じ明細を二重に計上していないかチェックしてください</li>
+          <li>勘定科目・税区分の最終判断は人（税理士・経理担当）が行います。AIの提案は「候補」です</li>
+        </ul>
+      </div>
+
+      <details>
+        <summary>🛠 迷ったとき・トラブル</summary>
+        <div class="body">
+          <ul>
+            <li><b>未処理（未仕訳）の明細が1件もない</b> → 口座連携と明細の同期を確認してください。その場合は、すぐ下の発展編（仕訳帳からルール表を育てる）に進むのがおすすめです。</li>
+            <li><b>MCPのエラーが出る・接続が切れた</b> → 「MCPの接続状態を確認して、再認証の手順を案内して」とそのまま伝えてください。エラー文を貼るのがいちばん早いです。</li>
+            <li><b>AIが勝手に登録しようとする</b> → 「承認前に登録しないで。まず表を見せて」と止めてください。コピペ文の承認の一文が消えていないかも確認を。</li>
+            <li><b>科目の判定が明らかに変</b> → その場で直して計上し、仕上げのコピペ文Rで正しいルールを追記してください。「間違い→ルール化」こそ育てる運用です。</li>
+            <li><b>当日ついていけなかった</b> → 問題ありません。このページとアーカイブ動画で、後日同じ流れを再現できます。</li>
+          </ul>
+        </div>
+      </details>
+
+      <div class="soft-head">
+        <span class="soft-badge both">共通</span>
+        <h3>発展編（宿題）：過去の仕訳帳から、ルール表を一気に育てる</h3>
+      </div>
+
+      <p>コピペ文Rで足せるのは、その日AI判定になった数行だけです。実は、あなたの会計ソフトには「判断の型」がすでに大量に眠っています。<b>過去の仕訳帳</b>です。これをAIに読ませてルール案を出させると、15行のひな形が一晩で「自分の事務所のルール表」に化けます。</p>
+
+      <div class="box tip">
+        <div class="box-h">💡 畠山のルール表も、こうして育ちました</div>
+        畠山の本番ルール表は現在<b>約700キーワード</b>（配布キットのrules.csvは、そこから汎用的な約160個を抜き出したもの）。最初から700あったわけではありません。「新顔が出たらルール化する」「過去の仕訳からまとめて起こす」の繰り返しで育った数字です。育てるほどAIに頼る場面が減り、速く・安く・正確になります。
+      </div>
+
+      <div class="box howto">
+        <div class="box-h">📋 進め方（宿題・freee／MF共通）</div>
+        <ol>
+          <li>会計ソフトの画面から仕訳帳をCSVでエクスポートする（freee：「レポート」→「仕訳帳」、MF：「会計帳簿」→「仕訳帳」）。<b>まずは自分の事務所（自社）の直近3ヶ月分</b>がおすすめです</li>
+          <li>CSVを作業用フォルダ（勘定科目ルール.md と同じ場所）に入れて、Claude Codeで下のコピペ文Sを送る</li>
+          <li>提案されたルール案を1行ずつ確認して、OKなものだけ追記してもらう</li>
+        </ol>
+      </div>
+
+      <div class="copy">
+        <div class="copy-label">📋 コピペ文S：仕訳帳からルール表のたたき台を作る（freee／MF共通）</div>
+        <button class="copy-btn" onclick="copyCode(this)">コピー</button>
+<pre>このフォルダに入れた仕訳帳のCSVを読んでください。
+
+経費系の科目（通信費・旅費交通費・消耗品費・会議費など）について、
+摘要のキーワードと勘定科目の組み合わせを集計して、
+勘定科目ルール.md に追加するルール案を作ってください。
+
+・「キーワード／勘定科目／メモ」の形式で、出現回数の多い順に最大20行
+・すでにルール表にあるキーワードは除外する
+・同じキーワードが複数の勘定科目で使われていたら、ルール案にせず
+　「要判断」として件数つきの別枠で見せてください
+
+私が「OK」と言った行だけ、勘定科目ルール.md に追記してください。</pre>
+      </div>
+
+      <div class="box safe">
+        <div class="box-h">🔒 発展編の安全メモ</div>
+        <ul>
+          <li><b>過去の仕訳は「正解」とは限りません</b>。昔の誤仕訳ごとルール化されてしまうので、ここでも「1行ずつ承認」が鉄則です</li>
+          <li>顧問先の仕訳帳を使う場合は、取引先名などの情報がAIに渡ることを踏まえて判断してください。<b>迷ったら自社データだけ</b>で十分です</li>
+          <li>一度に全期間を読ませないでください。直近3ヶ月・経費系だけで、ルール表は十分育ちます</li>
+        </ul>
+      </div>
+
+      <div class="check" onclick="toggle(this,event)">
+        <input type="checkbox" data-step="4">
+        <label>✅ 未処理明細の「取得→判定→承認→計上」を体験し、ルール表に1行追加した（デモ見学＋1件でもOK）</label>
+      </div>
+    </section>
+
+    <!-- ===== ステップ5 ===== -->
+    <section class="step" id="t5">
+      <div class="step-head">
+        <div class="step-num">5<small>/ 5</small></div>
+        <div class="step-title">
+          <h2>体験②：請求書をOCRで読み取って起票する（共通）🧾</h2>
+          <div class="step-meta">
+            <span class="tag time">⏱ 当日ワーク 約20分</span>
+            <span class="tag type">🚀 本番・体験</span>
+          </div>
+        </div>
+      </div>
+
+      <p>2つ目の本丸は、<b>請求書PDFをOCRで読み取り、会計ソフトに起票（記帳）する</b>流れです。ここはfreee・MF共通。まず畠山のライブデモで「完成形」を見てから、セットアップ不要のミニ体験で同じ流れを自分の手で動かします。</p>
+
+      <div class="box howto">
+        <div class="box-h">🎬 ライブデモ：畠山自作の「バクラク請求書風」レビューアプリ</div>
+        畠山が実務で使っている、自作の請求書レビューアプリをお見せします。<b>このアプリ自体、コードを1行も書かずにClaude Codeに作らせたもの</b>です。見どころは3つ。
+        <ul>
+          <li><b>束→一覧</b>：請求書PDFの束をフォルダに入れると、OCRで読み取られて一覧に。読めないスキャンPDFは自動でAI-OCRに切り替わります</li>
+          <li><b>人は確認だけ</b>：左に請求書リスト、中央にPDFプレビュー、右に取引先・金額・勘定科目のフォーム。人は目視確認して「確認済みにして次へ」を押すだけ</li>
+          <li><b>承認分だけ起票</b>：確認済みの請求書だけが、freeeの取引一括登録用データになります。畠山の事務所では、この仕組みで領収書562件を一気に処理した実績もあります</li>
+        </ul>
+      </div>
+
+      <div class="box howto">
+        <div class="box-h">📋 ミニ体験の進め方（当日・セットアップ不要）</div>
+        <ol>
+          <li>テスト用の請求書PDFを1〜3枚、体験①と同じ作業用フォルダに入れる<br><span style="font-size:13px;color:var(--sub)">※ サンプル請求書を配布資料フォルダに用意します。ご自身の請求書を使う場合は、少額のものを選んでください</span></li>
+          <li>Claude Codeでそのフォルダを開いたまま、下のコピペ文を送信する</li>
+        </ol>
+      </div>
+
+      <div class="copy">
+        <div class="copy-label">📋 デスクトップアプリに貼るだけ：請求書OCR→起票（freee／MF共通）</div>
+        <button class="copy-btn" onclick="copyCode(this)">コピー</button>
+<pre>このフォルダに置いた請求書PDFを、すべて読み取ってください。
+
+読み取り結果を、次の項目の一覧表にして私に見せてください。
+・ファイル名／取引先名／請求日／支払期日／税込金額
+・内容の要約（何の請求か）
+・勘定科目の候補と、その理由
+・源泉所得税の対象になりそうな請求書には印をつける
+
+一覧を私が確認して「OK」と言った請求書だけ、
+MCPで会計ソフト（freee／MF会計）に取引として登録してください。
+登録前に、登録する内容をもう一度見せてください。</pre>
+      </div>
+
+      <div class="box tip">
+        <div class="box-h">💡 これで何がラクになる？</div>
+        顧問先や自社の請求書処理が「PDFをフォルダに入れて、一覧を確認してOKと言うだけ」になります。今日のミニ体験はその最小形。ここから件数が増えたら、デモで見たようなレビューアプリや、配布キットの <code>invoice_ocr.py</code>（畠山ルート版）に育てていけます。
+      </div>
+
+      <div class="box safe">
+        <div class="box-h">🔒 安全メモ</div>
+        <ul>
+          <li>マイナンバーや口座情報がびっしり載った書類は、体験には使わないでください</li>
+          <li>OCRの金額は<b>必ず原本と突合</b>してください（読み取りミスは起こり得ます）</li>
+          <li>源泉所得税の要否など税務判断が絡む部分は、AIの印付けを鵜呑みにせず最終確認を</li>
+        </ul>
+      </div>
+
+      <details>
+        <summary>🛠 迷ったとき・トラブル</summary>
+        <div class="body">
+          <ul>
+            <li><b>PDFがうまく読めない</b> → スキャン画質が低い可能性があります。「読み取れなかった項目は『不明』と書いて」と伝えると、無理な推測を防げます。</li>
+            <li><b>金額が原本と違う</b> → そのまま登録せず「◯◯円が正しいので修正して」と指示。AIの読み取りは必ず人が突合します。</li>
+            <li><b>登録でエラーが出る</b> → MCPの認証が切れている可能性があります。「MCPの接続状態を確認して」と伝えるか、エラー文をそのまま貼ってください。</li>
+          </ul>
+        </div>
+      </details>
+
+      <div class="check" onclick="toggle(this,event)">
+        <input type="checkbox" data-step="5">
+        <label>✅ 請求書OCRの読み取り一覧を確認し、起票までの流れを体験した（デモ見学＋1枚でもOK）</label>
+      </div>
+    </section>
+
+    <!-- ===== 恩送り掲示板 ===== -->
+    <section class="step" id="post" style="border-color:var(--green)">
+      <div class="step-head">
+        <div class="step-num" style="background:var(--green)">✍️<small>任意</small></div>
+        <div class="step-title">
+          <h2>恩送りメモを投稿する</h2>
+          <div class="step-meta">
+            <span class="tag time">⏱ 約3分</span>
+            <span class="tag type">🌟 任意（チェック対象外）</span>
+          </div>
+        </div>
+      </div>
+
+      <p>第3回の課題を通して感じたことを、ぜひ教えてください。<b>良かった点・改善してほしい点、どちらも歓迎</b>です。いただいた内容は、次回以降のブートキャンプ資料のアップデートに反映させていただきます。</p>
+
+      <div class="post-field">
+        <label for="postName">お名前・ニックネーム（任意）</label>
+        <input type="text" id="postName" placeholder="例：たけだ">
+      </div>
+      <div class="post-field">
+        <label for="postMemo">恩送りメモ（良かったこと・改善してほしいこと、どちらもOKです）</label>
+        <textarea id="postMemo" placeholder="例：第3回：MF会計でも起票できて感動しました／ルール表の育て方が腹落ちしました　など"></textarea>
+      </div>
+      <button class="post-submit" id="postBtn" onclick="submitPost()">📮 投稿する</button>
+      <div class="post-status" id="postStatus"></div>
+
+      <div class="box safe">
+        <div class="box-h">🔒 安全メモ</div>
+        投稿内容は他の受講生・運営も閲覧できる公開掲示板に表示されます。APIキーやパスワードなどの秘密情報、個人情報は記載しないようお願いいたします。
+      </div>
+
+      <a class="board-link" href="board.html" target="_blank" rel="noopener">📋 みんなの投稿を見る（掲示板を開く）→</a>
+    </section>
+
+    <!-- FAQ -->
+    <section id="faq">
+      <h2>❓ よくあるつまずき</h2>
+      <details>
+        <summary>プログラミング未経験ですが、ついていけますか？</summary>
+        <div class="body">ついていけます。この回でもコードは1行も書きません。当日のワークはMCP連携＋コピペ文だけで完結します。皆さんは日本語で指示を出し、結果を確認して承認するだけです。</div>
+      </details>
+      <details>
+        <summary>PythonやAnthropic APIキーは必要ですか？</summary>
+        <div class="body">当日の体験には<b>どちらも不要</b>です。必要になるのは、ステップ④の「畠山ルート」（配布キット「freeeオート経理（体験版）」）を後日動かすときだけ。手順はキットのREADMEとこのページの折りたたみにまとめてあり、Pythonのインストールも含めてClaude Codeが案内してくれます。</div>
+      </details>
+      <details>
+        <summary>マネーフォワード クラウド会計のユーザーですが、同じ体験ができますか？</summary>
+        <div class="body">できます。今回からMF公式のMCPサーバー連携で、未仕訳明細の取得から計上までを体験できるようになりました。接続はステップ②、ワークはステップ④の「MF会計」のコピペ文を使ってください。</div>
+      </details>
+      <details>
+        <summary>弥生・JDL・TKCなど、freee/MF以外の会計ソフトを使っています</summary>
+        <div class="body">未処理明細の直接連携（体験①）は、現時点でfreee会計とMF会計のみです。ただし、ステップ③の「ルールを育てる」考え方と、ステップ⑤のOCR読み取り（一覧化まで）はソフトを問わず使えます。CSV取込やOCR→手入力ブリッジでの応用は、質疑応答会で個別にフォローします。</div>
+      </details>
+      <details>
+        <summary>第1回の課題が終わっていません</summary>
+        <div class="body">先に<a href="index.html">第1回の課題ページ</a>を進めてください。キャッチアップ会でも同じ内容をフォローしていますので、そこで追いつけば大丈夫です。</div>
+      </details>
+      <details>
+        <summary>実務の本番データで試してもいいですか？</summary>
+        <div class="body">体験の段階では、テスト用の事業所や少額・少件数の取引をおすすめします。「登録前に必ず見せて」を徹底し、AIが起票した内容は必ず人が確認してください。慣れてから本番運用に広げるのが安全です。</div>
+      </details>
+      <details>
+        <summary>配布資料はいつ・どこでもらえますか？</summary>
+        <div class="body">Google Driveの会員様配布資料フォルダ（テンプレート &gt; 第3回-記帳）で<b>事前に共有します</b>。中身は「勘定科目ルール.md（ルール表ひな形）」「MF会計MCPセットアップガイド」「サンプル請求書」「freeeオート経理（体験版）キット（freee-auto-keiri-kit.zip）」です。フォルダのリンクは受講生向けの連絡（DiscordやLINE等）でご案内します。資料は受講後も手元に残り、自分の実務用に育てていけます。</div>
+      </details>
+    </section>
+
+    <!-- 修了 -->
+    <section class="finish" id="finish">
+      <h2 id="finishMsg">🎉 第3回 完了を目指そう！</h2>
+      <p>5つのチェックが全部つくと、ここが「修了」に変わります。</p>
+      <a href="#hero" class="cta">↑ 上に戻ってチェックを進める</a>
+    </section>
+
+  </main>
+</div>
+
+<script>
+  // 恩送り掲示板への投稿
+  const BOARD_API = 'https://script.google.com/macros/s/AKfycbzhsHqZgC4KO_i9fMNZDY2CBbJx-0YSVNJfrPpd5M35EcjAq1iSPY_rHOUkzEBPU6gUhg/exec';
+  function submitPost(){
+    const name = document.getElementById('postName').value.trim();
+    const memo = document.getElementById('postMemo').value.trim();
+    const btn = document.getElementById('postBtn');
+    const status = document.getElementById('postStatus');
+    if(!memo){
+      status.textContent = '恩送りメモを入力してください。';
+      status.className = 'post-status err';
+      return;
+    }
+    btn.disabled = true;
+    status.textContent = '送信中…';
+    status.className = 'post-status';
+    fetch(BOARD_API, {
+      method: 'POST',
+      mode: 'no-cors',
+      headers: {'Content-Type': 'text/plain;charset=utf-8'},
+      body: JSON.stringify({name: name || '匿名', memo: '【第3回】' + memo})
+    }).then(()=>{
+      status.textContent = '投稿ありがとうございます！🌸 掲示板に反映されます。';
+      status.className = 'post-status ok';
+      document.getElementById('postMemo').value = '';
+      btn.disabled = false;
+    }).catch(()=>{
+      status.textContent = '送信に失敗しました。通信環境をご確認のうえ、もう一度お試しください。';
+      status.className = 'post-status err';
+      btn.disabled = false;
+    });
+  }
+
+  // コピーボタン
+  function copyCode(btn){
+    const pre = btn.parentElement.querySelector('pre');
+    navigator.clipboard.writeText(pre.innerText).then(()=>{
+      btn.textContent='コピー済み✓';btn.classList.add('copied');
+      setTimeout(()=>{btn.textContent='コピー';btn.classList.remove('copied')},1600);
+    });
+  }
+
+  // チェックの進捗
+  const KEY='bootcamp3_progress';
+  const TOTAL=5;
+  function load(){try{return JSON.parse(localStorage.getItem(KEY))||{}}catch(e){return {}}}
+  function save(s){localStorage.setItem(KEY,JSON.stringify(s))}
+
+  function render(){
+    const s=load();
+    let done=0;
+    document.querySelectorAll('input[data-step]').forEach(cb=>{
+      const n=cb.dataset.step;
+      cb.checked=!!s[n];
+      cb.closest('.step').classList.toggle('done',!!s[n]);
+      if(s[n])done++;
+    });
+    document.getElementById('cnt').textContent=done;
+    document.getElementById('fill').style.width=(done/TOTAL*100)+'%';
+    const fin=document.getElementById('finish');
+    const msg=document.getElementById('finishMsg');
+    if(done===TOTAL){
+      msg.textContent='🎉 第3回 修了おめでとうございます！自動記帳の本丸、突破です🌸';
+      fin.classList.add('celebrate');
+    }else{
+      msg.textContent='🎉 第3回 完了を目指そう！';
+      fin.classList.remove('celebrate');
+    }
+  }
+
+  function toggle(el,e){
+    if(e.target.tagName!=='INPUT'){
+      const cb=el.querySelector('input');cb.checked=!cb.checked;
+    }
+    const s=load();
+    el.querySelectorAll('input[data-step]').forEach(cb=>{s[cb.dataset.step]=cb.checked});
+    save(s);render();
+  }
+  document.querySelectorAll('input[data-step]').forEach(cb=>{
+    cb.addEventListener('change',()=>{
+      const s=load();s[cb.dataset.step]=cb.checked;save(s);render();
+    });
+  });
+
+  render();
+</script>
+<script>window.BOOTCAMP_PAGE='vol03';</script>
+<script src="progress-tracker.js"></script>
+</body>
+</html>
